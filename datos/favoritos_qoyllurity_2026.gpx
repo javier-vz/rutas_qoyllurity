@@ -1,0 +1,323 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<gpx version="1.1" creator="OsmAnd 5.4.9" xmlns="http://www.topografix.com/GPX/1/1" xmlns:osmand="https://osmand.net/docs/technical/osmand-file-formats/osmand-gpx" xmlns:gpxtpx="https://www8.garmin.com/xmlschemas/TrackPointExtensionv1.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 https://www.topografix.com/GPX/1/1/gpx.xsd">
+  <metadata>
+    <name>favorites-Qoyllurity_2026</name>
+  </metadata>
+  <wpt lat="-13.7890711" lon="-71.2299042">
+    <ele>4645</ele>
+    <time>2026-05-21T19:58:43Z</time>
+    <name>ALTA_Ausangate_REF</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:osm_tag_travel_elo>1888</osmand:osm_tag_travel_elo>
+      <osmand:address>Dirección indeterminada</osmand:address>
+      <osmand:amenity_origin>Amenity:Ausangate: natural:peak;wiki_place</osmand:amenity_origin>
+      <osmand:icon>natural_peak</osmand:icon>
+      <osmand:osm_tag_ele>6384</osmand:osm_tag_ele>
+      <osmand:osm_tag_wikidata>Q777794</osmand:osm_tag_wikidata>
+      <osmand:amenity_type>natural</osmand:amenity_type>
+      <osmand:amenity_subtype>peak;wiki_place</osmand:amenity_subtype>
+      <osmand:osm_tag_travel_topic>3</osmand:osm_tag_travel_topic>
+      <osmand:osm_tag_wiki_photo>Ausangate.jpg</osmand:osm_tag_wiki_photo>
+      <osmand:osm_tag_alt_name>Awsanqati</osmand:osm_tag_alt_name>
+      <osmand:amenity_name>Ausangate</osmand:amenity_name>
+      <osmand:osm_tag_osmand_poi_key>peak</osmand:osm_tag_osmand_poi_key>
+      <osmand:osm_tag_wikipedia>http://qu.wikipedia.org/wiki/Awsanqati rit'i urqu (Pitumarka-Uqunqati)</osmand:osm_tag_wikipedia>
+      <osmand:osm_tag_qrank>33838</osmand:osm_tag_qrank>
+      <osmand:osm_tag_wiki_place>wiki_place</osmand:osm_tag_wiki_place>
+      <osmand:osm_tag_peak>peak</osmand:osm_tag_peak>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.519199" lon="-71.2066519">
+    <ele>4656</ele>
+    <time>2026-05-21T19:57:06Z</time>
+    <name>ALTA_Colque_Punku_PRE</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:amenity_subtype>peak</osmand:amenity_subtype>
+      <osmand:address>Dirección indeterminada</osmand:address>
+      <osmand:amenity_origin>Amenity:Jolljepunco: natural:peak</osmand:amenity_origin>
+      <osmand:osm_tag_wiki_photo>Qoyllur_Rit'i_dancers.jpg</osmand:osm_tag_wiki_photo>
+      <osmand:amenity_name>Jolljepunco</osmand:amenity_name>
+      <osmand:icon>natural_peak</osmand:icon>
+      <osmand:osm_tag_osmand_poi_key>peak</osmand:osm_tag_osmand_poi_key>
+      <osmand:osm_tag_wikidata>Q13190737</osmand:osm_tag_wikidata>
+      <osmand:amenity_type>natural</osmand:amenity_type>
+      <osmand:osm_tag_wikipedia>http://es.wikipedia.org/wiki/Colquepunco</osmand:osm_tag_wikipedia>
+      <osmand:osm_tag_qrank>863</osmand:osm_tag_qrank>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.6052438" lon="-71.2291664">
+    <ele>4068.2</ele>
+    <time>2026-05-21T18:08:16Z</time>
+    <name>BASE_Mahuayani</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:amenity_subtype>residential;village</osmand:amenity_subtype>
+      <osmand:address>Interoceánica Sur, Mahuayani</osmand:address>
+      <osmand:amenity_origin>Amenity:Mahuayani: administrative:residential;village</osmand:amenity_origin>
+      <osmand:osm_tag_addr_street>Interoceánica Sur</osmand:osm_tag_addr_street>
+      <osmand:amenity_name>Mahuayani</osmand:amenity_name>
+      <osmand:osm_tag_residential>residential</osmand:osm_tag_residential>
+      <osmand:icon>village</osmand:icon>
+      <osmand:osm_tag_village>village</osmand:osm_tag_village>
+      <osmand:amenity_type>administrative</osmand:amenity_type>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.6270161" lon="-71.3883591">
+    <ele>3538.8</ele>
+    <time>2026-05-21T19:32:12Z</time>
+    <name>BASE_Ocongate</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:osm_tag_travel_elo>1225</osmand:osm_tag_travel_elo>
+      <osmand:address>Calle Libertad, Ocongate</osmand:address>
+      <osmand:amenity_origin>Amenity:Ocongate: osmwiki:wiki_place</osmand:amenity_origin>
+      <osmand:osm_tag_addr_street>Calle Libertad</osmand:osm_tag_addr_street>
+      <osmand:icon>wiki_place</osmand:icon>
+      <osmand:osm_tag_wikidata>Q3312165</osmand:osm_tag_wikidata>
+      <osmand:amenity_type>osmwiki</osmand:amenity_type>
+      <osmand:amenity_subtype>wiki_place</osmand:amenity_subtype>
+      <osmand:osm_tag_travel_topic>6</osmand:osm_tag_travel_topic>
+      <osmand:osm_tag_wiki_photo>LacSibinacocha_Perou.jpg</osmand:osm_tag_wiki_photo>
+      <osmand:amenity_name>Ocongate</osmand:amenity_name>
+      <osmand:osm_tag_wikipedia>http://es.wikipedia.org/wiki/Distrito de Ocongate</osmand:osm_tag_wikipedia>
+      <osmand:osm_tag_qrank>7583</osmand:osm_tag_qrank>
+      <osmand:osm_tag_population>3365</osmand:osm_tag_population>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.3176022" lon="-71.5959702">
+    <time>2026-05-21T19:34:25Z</time>
+    <name>BASE_Paucartambo</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:osm_tag_travel_elo>1539</osmand:osm_tag_travel_elo>
+      <osmand:address>Cerca de CU-116</osmand:address>
+      <osmand:amenity_origin>Amenity:Paucartambo: administrative:town;wiki_place</osmand:amenity_origin>
+      <osmand:osm_tag_addr_street>CU-116</osmand:osm_tag_addr_street>
+      <osmand:icon>place_town</osmand:icon>
+      <osmand:osm_tag_ele>2905</osmand:osm_tag_ele>
+      <osmand:osm_tag_wikidata>Q2989631</osmand:osm_tag_wikidata>
+      <osmand:amenity_type>administrative</osmand:amenity_type>
+      <osmand:osm_tag_town>town</osmand:osm_tag_town>
+      <osmand:amenity_subtype>town;wiki_place</osmand:amenity_subtype>
+      <osmand:osm_tag_travel_topic>6</osmand:osm_tag_travel_topic>
+      <osmand:osm_tag_wiki_photo>4_-_Paucartambo_-_Août_2008.jpg</osmand:osm_tag_wiki_photo>
+      <osmand:amenity_name>Paucartambo</osmand:amenity_name>
+      <osmand:osm_tag_osmand_poi_key>town</osmand:osm_tag_osmand_poi_key>
+      <osmand:osm_tag_wikipedia>http://es.wikipedia.org/wiki/Paucartambo</osmand:osm_tag_wikipedia>
+      <osmand:osm_tag_qrank>9332</osmand:osm_tag_qrank>
+      <osmand:osm_tag_wiki_place>wiki_place</osmand:osm_tag_wiki_place>
+      <osmand:osm_tag_population>3990</osmand:osm_tag_population>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.5482807" lon="-71.2366562">
+    <ele>4452</ele>
+    <time>2026-05-21T18:52:34Z</time>
+    <name>BASE_Santuario_Qoylluriti</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:amenity_subtype>catholic_church</osmand:amenity_subtype>
+      <osmand:collapsable_denomination>denomination_catholic</osmand:collapsable_denomination>
+      <osmand:address>Dirección indeterminada</osmand:address>
+      <osmand:amenity_origin>Amenity:Santuario Senor de Qoylluriti: tourism:catholic_church</osmand:amenity_origin>
+      <osmand:amenity_name>Santuario Señor de Qoylluriti</osmand:amenity_name>
+      <osmand:collapsable_religion_type>religion_christian</osmand:collapsable_religion_type>
+      <osmand:icon>building_type_church</osmand:icon>
+      <osmand:amenity_type>tourism</osmand:amenity_type>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.5280657" lon="-71.2343674">
+    <ele>4452</ele>
+    <time>2026-05-21T19:30:32Z</time>
+    <name>BASE_Sinakara</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:address>Dirección indeterminada</osmand:address>
+      <osmand:amenity_origin>Amenity:Cinajara: natural:peak</osmand:amenity_origin>
+      <osmand:icon>natural_peak</osmand:icon>
+      <osmand:osm_tag_ele>5450</osmand:osm_tag_ele>
+      <osmand:osm_tag_wikidata>Q13190788</osmand:osm_tag_wikidata>
+      <osmand:amenity_type>natural</osmand:amenity_type>
+      <osmand:amenity_subtype>peak</osmand:amenity_subtype>
+      <osmand:osm_tag_wiki_photo>Qoyllur_Rit'i_dancers.jpg</osmand:osm_tag_wiki_photo>
+      <osmand:osm_tag_alt_name>Sinaqara</osmand:osm_tag_alt_name>
+      <osmand:amenity_name>Cinajara</osmand:amenity_name>
+      <osmand:osm_tag_osmand_poi_key>peak</osmand:osm_tag_osmand_poi_key>
+      <osmand:osm_tag_wikipedia>http://es.wikipedia.org/wiki/Cinajara</osmand:osm_tag_wikipedia>
+      <osmand:osm_tag_qrank>376</osmand:osm_tag_qrank>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.6288563" lon="-71.3620216">
+    <time>2026-05-21T22:57:05Z</time>
+    <name>BASE_Tayankani_PRE</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:amenity_subtype>village</osmand:amenity_subtype>
+      <osmand:address>Tayankani</osmand:address>
+      <osmand:amenity_origin>Amenity:Tayankani: administrative:village</osmand:amenity_origin>
+      <osmand:amenity_name>Tayankani</osmand:amenity_name>
+      <osmand:icon>village</osmand:icon>
+      <osmand:amenity_type>administrative</osmand:amenity_type>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.5472129" lon="-71.2360156">
+    <ele>4452</ele>
+    <time>2026-05-21T20:04:51Z</time>
+    <name>BUSCAR_Celda_Ukukus_Paucartambo</name>
+    <type>Qoyllurity_2026</type>
+  </wpt>
+  <wpt lat="-13.3170816" lon="-71.5963037">
+    <time>2026-05-30T14:09:26Z</time>
+    <name>Casa carguyoc</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:address>CU-113</osmand:address>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.3210117" lon="-71.5941911">
+    <time>2026-05-31T18:09:06Z</time>
+    <name>Casa Mariano Martínez ukumari: siempre bienvenidos, nunca dejan de ser ukumaris. Agradecidos x la visita</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:address>Jirón Alianza, Paucartambo</osmand:address>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.6049049" lon="-71.5634608">
+    <time>2026-06-01T03:50:53Z</time>
+    <name>Ccatca</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:address>Ccatca</osmand:address>
+      <osmand:amenity_origin>Amenity:Ccatca: administrative:village</osmand:amenity_origin>
+      <osmand:osm_tag_addr_street>Avenida Matias Troncoso</osmand:osm_tag_addr_street>
+      <osmand:icon>place_town</osmand:icon>
+      <osmand:osm_tag_ele>3699</osmand:osm_tag_ele>
+      <osmand:osm_tag_wikidata>Q5055635</osmand:osm_tag_wikidata>
+      <osmand:amenity_type>administrative</osmand:amenity_type>
+      <osmand:amenity_subtype>village</osmand:amenity_subtype>
+      <osmand:amenity_name>Ccatca</osmand:amenity_name>
+      <osmand:osm_tag_osmand_poi_key>town</osmand:osm_tag_osmand_poi_key>
+      <osmand:osm_tag_wikipedia>http://en.wikipedia.org/wiki/Ccatca</osmand:osm_tag_wikipedia>
+      <osmand:osm_tag_qrank>235</osmand:osm_tag_qrank>
+      <osmand:osm_tag_population>653</osmand:osm_tag_population>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.3206767" lon="-71.59331">
+    <time>2026-05-31T14:30:37Z</time>
+    <name>Cementerio Paucartambo</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:address>Jirón Alianza, Paucartambo</osmand:address>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.5046617" lon="-71.64794">
+    <ele>3872.8</ele>
+    <time>2026-06-01T01:30:42Z</time>
+    <name>Huancarani</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:address>Avenida 11 de Mayo, Huancarani</osmand:address>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.317754" lon="-71.5958887">
+    <time>2026-05-21T22:19:48Z</time>
+    <name>LUGAR_Iglesia_Paucartambo_PRE</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:amenity_subtype>roman_catholic_church</osmand:amenity_subtype>
+      <osmand:collapsable_denomination>denomination_roman_catholic</osmand:collapsable_denomination>
+      <osmand:address>Cerca de CU-116</osmand:address>
+      <osmand:amenity_origin>Amenity:Parroquia Virgen del Rosario: tourism:roman_catholic_church</osmand:amenity_origin>
+      <osmand:osm_tag_addr_street>CU-116</osmand:osm_tag_addr_street>
+      <osmand:amenity_name>Parroquia Virgen del Rosario</osmand:amenity_name>
+      <osmand:collapsable_religion_type>religion_christian</osmand:collapsable_religion_type>
+      <osmand:icon>building_type_church</osmand:icon>
+      <osmand:amenity_type>tourism</osmand:amenity_type>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.319226" lon="-71.5948588">
+    <ele>2911.2</ele>
+    <time>2026-05-21T22:48:47Z</time>
+    <name>LUGAR_Loza_Huascar_PRE</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:osm_tag_lit_yes>yes</osmand:osm_tag_lit_yes>
+      <osmand:address>CU-116</osmand:address>
+      <osmand:amenity_origin>Amenity:Cancha Huascar: sport:pitch;sport_multi;soccer;basketball</osmand:amenity_origin>
+      <osmand:osm_tag_addr_street>CU-116</osmand:osm_tag_addr_street>
+      <osmand:icon>pitch</osmand:icon>
+      <osmand:osm_tag_pitch>pitch</osmand:osm_tag_pitch>
+      <osmand:osm_tag_soccer>soccer</osmand:osm_tag_soccer>
+      <osmand:amenity_type>sport</osmand:amenity_type>
+      <osmand:osm_tag_basketball>basketball</osmand:osm_tag_basketball>
+      <osmand:osm_tag_surface_asphalt>asphalt</osmand:osm_tag_surface_asphalt>
+      <osmand:amenity_subtype>pitch;sport_multi;soccer;basketball</osmand:amenity_subtype>
+      <osmand:amenity_name>Cancha Huascar</osmand:amenity_name>
+      <osmand:osm_tag_sport_multi>multi</osmand:osm_tag_sport_multi>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.3162736" lon="-71.5976525">
+    <time>2026-05-30T15:47:36Z</time>
+    <name>Orilla rio</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:address>CU-113</osmand:address>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.3190227" lon="-71.5953673">
+    <time>2026-05-30T21:04:26Z</time>
+    <name>Plaza campesinos</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:address>Cerca de CU-116</osmand:address>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.3175504" lon="-71.5960068">
+    <time>2026-05-30T12:33:07Z</time>
+    <name>Plaza Kukuli</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:amenity_subtype>park</osmand:amenity_subtype>
+      <osmand:address>Cerca de CU-113</osmand:address>
+      <osmand:amenity_origin>Amenity:Plaza Kukuli: entertainment:park</osmand:amenity_origin>
+      <osmand:osm_tag_addr_street>CU-113</osmand:osm_tag_addr_street>
+      <osmand:amenity_name>Plaza Kukuli</osmand:amenity_name>
+      <osmand:icon>park</osmand:icon>
+      <osmand:amenity_type>entertainment</osmand:amenity_type>
+    </extensions>
+  </wpt>
+  <wpt lat="-13.5484862" lon="-71.237447">
+    <ele>4452</ele>
+    <time>2026-05-21T20:03:38Z</time>
+    <name>RITUAL_Entrada_Santuario_PRE</name>
+    <type>Qoyllurity_2026</type>
+  </wpt>
+  <wpt lat="-13.5760181" lon="-71.287542">
+    <ele>4044.2</ele>
+    <time>2026-05-21T19:49:06Z</time>
+    <name>RUTA_Yanacancha_PRE</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:amenity_subtype>village</osmand:amenity_subtype>
+      <osmand:address>Yanacancha</osmand:address>
+      <osmand:amenity_origin>Amenity:Yanacancha: administrative:village</osmand:amenity_origin>
+      <osmand:amenity_name>Yanacancha</osmand:amenity_name>
+      <osmand:icon>village</osmand:icon>
+      <osmand:amenity_type>administrative</osmand:amenity_type>
+    </extensions>
+  </wpt>
+  <wpt lat="-12.0438774" lon="-77.0366418">
+    <time>2026-06-20T17:20:52Z</time>
+    <name>Templo San Sebastián</name>
+    <type>Qoyllurity_2026</type>
+    <extensions>
+      <osmand:address>Jirón Ica (Monserrate) 569, Lima</osmand:address>
+    </extensions>
+  </wpt>
+  <extensions>
+    <osmand:points_groups>
+      <group name="Qoyllurity_2026" color="#EECC22" icon="special_star" background="circle" pinned="false" />
+    </osmand:points_groups>
+  </extensions>
+</gpx>

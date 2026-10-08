@@ -1,0 +1,17 @@
+name: camino
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - numpy
+  - scipy
+  - pandas
+  - rasterio        # lectura/escritura de GeoTIFF y reproyeccion (sin GDAL CLI)
+  - geopandas       # vectores y GeoPackage (sin ogr2ogr)
+  - shapely         # buffers, linemerge, substring
+  - pyyaml
+  - networkx        # el Qhapaq Nan como red (paso 'red')
+  - joblib          # el barrido en paralelo
+  - matplotlib
+  - requests
+  - pytest

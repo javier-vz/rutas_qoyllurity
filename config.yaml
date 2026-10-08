@@ -1,0 +1,194 @@
+# Parametros del estudio. Todo numero discutible vive aqui.
+# Peregrinacion de Qoyllur Rit'i: valle de Sinakara - Ausangate, Cusco.
+#
+# Este es un proyecto APARTE del de Leimebamba, con la misma maquinaria. Son
+# carpetas distintas porque el bbox, el CRS y los derivados son otros, y el
+# programa se para si el bbox no coincide con los rasteres de derivados/.
+# No mezclar las dos carpetas.
+
+version: "0.21.0"
+
+extension:
+  # LA CAJA DEL ESTUDIO, calculada el 8-oct-2026 a partir de los ocho tracks
+  # A PIE mas el Ausangate, con 4 km de aire alrededor (buffer_corredor).
+  #
+  # Por que entra el Ausangate aunque ningun track lo pise: el nevado es el
+  # referente de la visibilidad, y una cuenca visual necesita el terreno DEL
+  # OBJETIVO y todo el que haya en medio. Sin el Ausangate dentro de la caja,
+  # 'visibilidad' no puede calcularse y el angulo de elevacion por si solo no
+  # dice si se ve: entre medio puede haber una cresta.
+  #
+  # Los cuatro tracks EN CARRO (Paucartambo - Huancarani - Ccatcca - Ocongate
+  # - Mahuayani) quedan FUERA a proposito. Meterlos llevaria la caja hasta
+  # -71.6 y la triplicaria, y el acercamiento por carretera no es parte de lo
+  # que se modela: no se camina y su trazado es de ingenieria vial moderna.
+  # Los archivos estan en datos/trayectorias/ y 'trayectorias' los mide igual
+  # -- eso no necesita DEM-- pero no entran al costo ni a la visibilidad.
+  #
+  # Cuesta 1.02 millones de celdas, 25.6 x 36.0 km. Es SEIS VECES menos que
+  # la caja de Leimebamba (6.44 M), asi que bajar y preparar es rapido y el
+  # grafo pide 0.09 GB con K = 1.
+  bbox:
+    oeste: -71.425
+    sur: -13.824
+    este: -71.185
+    norte: -13.5
+
+  # UTM 19S, no 18S.
+  #
+  # Esto hay que mirarlo dos veces porque es el error facil: el proyecto de
+  # Leimebamba va en EPSG:32718 (zona 18S, meridiano central -75), y Amazonas
+  # cae ahi. Qoyllur Rit'i esta a -71.2, o sea en la ZONA 19 (-72 a -66,
+  # meridiano central -69). Usar 32718 aqui proyecta a 408 km del meridiano
+  # central en vez de 241, y las distancias salen infladas: los ocho tracks
+  # dan 36.987 km en 32718 y 36.941 km en 32719, un 0.12% de diferencia.
+  # Poco, pero gratis de arreglar y de los errores que nadie revisa despues.
+  crs: EPSG:32719
+  resolucion: 30           # m, la del Copernicus GLO-30
+
+datos:
+  # Dejala vacia y usa la variable de entorno OPENTOPOGRAPHY_API_KEY, para
+  # que la llave no acabe en el control de versiones.
+  api_key_opentopography: ""
+
+  # GeoCAM no se usa en este proyecto: el recorrido observado no es una capa
+  # del registro arqueologico, son los tracks grabados, y entran por el paso
+  # 'trayectorias' y no por 'ruta'. Se dejan los endpoints por si algun dia
+  # se quiere cruzar con sitios registrados de la zona.
+  geocam_wfs: "https://geoservicios.cultura.gob.pe/geoserver/wfs"
+  geocam_capa: ""
+  geocam_servicio: ""
+  solo_observadas: true
+  capas_camino: []
+  tramo: ""
+  tramos_excluidos: []
+
+costo:
+  # Limite de validez del polinomio de Minetti: se midio en laboratorio entre
+  # -45% y +45% y fuera de ahi se estaria extrapolando. Las aristas que pasan
+  # de esto se QUITAN del grafo, no se recortan.
+  #
+  # OJO que aqui este numero esta puesto a prueba de otra manera: el paso
+  # 'trayectorias' mide hasta que pendiente camino la gente de verdad. Si
+  # resulta que se camina por encima de 45%, entonces el limite deja de ser
+  # solo el rango de validez del polinomio y se vuelve una decision que hay
+  # que justificar.
+  g_max: 0.45
+  epsilon: 1.0e-9
+  percentiles: [1.0, 99.0]
+
+  # El modelo de referencia solo mira el costo fisico del terreno; el
+  # ampliado le suma la relacion con los espacios ceremoniales. El de
+  # referencia es el caso del ampliado con esos pesos en cero.
+  #
+  # Aqui la componente ceremonial SI se puede poner, que es el motivo de
+  # hacer este proyecto: las estaciones estan documentadas y tienen
+  # coordenadas. Falta armar el archivo de sitios (ver 'ceremonial' abajo).
+  componentes_referencia: [fisico]
+  componentes_ampliado: [fisico, ceremonial]
+  #   Y cuando el archivo de sitios este, vale la pena probar tambien:
+  #   componentes_ampliado: [fisico, ceremonial, visibilidad]
+  vecindad: 16
+
+restricciones:
+  rugosidad_percentil: 99.0
+  area_min_laguna: 50000
+
+ceremonial:
+  # VACIO A PROPOSITO, y es la pieza que falta.
+  #
+  # Las estaciones del recorrido estan en datos/favoritos_qoyllurity_2026.gpx
+  # como waypoints: santuario, Colque Punku, Sinakara, Tayankani, Yanacancha,
+  # Mahuayani. Tres tienen identificador de Wikidata (Ausangate Q777794,
+  # Colque Punku Q13190737, Sinakara Q13190788).
+  #
+  # No se convierten automaticamente en el archivo de sitios porque un
+  # catalogo ceremonial no es una lista de puntos que uno marco en el GPS:
+  # hace falta decir de que fuente sale cada uno, que es (estacion de la
+  # procesion, santuario, apu, cruz), y si su posicion es la relevada o la
+  # del lugar. Eso se escribe a mano con la bibliografia al lado.
+  #
+  # Mientras este vacio, 'componentes_ampliado' con 'ceremonial' se para con
+  # un mensaje, que es lo correcto: es mejor que correr con un catalogo
+  # improvisado.
+  archivo: ""
+  distancia_saturacion: 5000
+  radio_extremos: 500
+
+visibilidad:
+  # Aqui si hay un apu documentado, al contrario que en el Utcubamba.
+  #
+  # El docstring de visibilidad.py dice que si algun dia aparece un cerro
+  # tutelar documentado para el corredor, va en 'visibilidad.puntos' y se
+  # suma a los sitios sin tocar el codigo. El Ausangate es ese caso: 6384 m,
+  # Wikidata Q777794, con culto registrado y con toda la peregrinacion
+  # ocurriendo en su campo visual.
+  #
+  # La coordenada es la de la cumbre. La altura del objetivo queda en 0
+  # porque el objetivo ES el terreno: lo que se pregunta es si se ve la
+  # montana, y la montana ya esta en el DEM.
+  puntos:
+    - [-71.2299042, -13.7890711]      # Ausangate, cumbre
+  radio: 30000             # m. Mas que en Leimebamba (8 km): desde el valle
+                           # de Sinakara al Ausangate hay unos 27 km y la
+                           # pregunta es justamente si se ve desde ahi.
+  altura_observador: 1.65
+  altura_objetivo: 0.0
+
+dominio:
+  buffer_corredor: 4000
+  umbral_quebrada: 1000000
+
+barrido:
+  n_simplex: 21
+  unidad: tramo
+  largo_min_unidad: 2000   # m. Mucho menos que los 8 km de Leimebamba: aqui
+                           # los tramos son los trechos entre estaciones y el
+                           # mas corto (glaciar - santuario) tiene 1.2 km.
+  n_sectores: 4
+  n_bloques: 4
+  largo_min_bloque: 500
+  m_nulos: 500
+  tau_max: 0.5
+  semilla: 20261008
+  n_trabajos: -1
+
+# --- trayectorias observadas (paso 'trayectorias') ---
+# Tracks grabados con sello de tiempo, en datos/trayectorias/*.gpx. Esto NO
+# es el registro: el registro entra por 'ruta' y no tiene tiempo.
+#
+# Los doce archivos son de OsmAnd 5.3.10, un punto cada 15-16 s, hdop mediano
+# entre 2.1 y 3.0, y practicamente sin huecos de grabacion (dos en un solo
+# archivo). OsmAnd escribe ademas su propia velocidad via Doppler, y cuando
+# decide que estas quieto congela el fix y OMITE la etiqueta: por eso la
+# falta de <osmand:speed> se lee como cero y no como dato ausente.
+trayectorias:
+  # Radio del circulo que tiene que contener todos los fixes de una parada.
+  # Con hdop mediano 3 y unos 5 m por unidad de hdop, el error horizontal
+  # esperable ronda los 15 m, asi que 20 deja algo de margen.
+  radio_parada: 20.0
+
+  # Duracion minima para que un intervalo quieto cuente como parada. Por
+  # debajo de dos minutos es atarse un cordon, no una estacion.
+  min_parada_s: 120.0
+
+  # 'aparato' (velocidad del receptor, via Doppler), 'dispersion' (el circulo
+  # de radio_parada) o 'ambos' = la union. La union y no la interseccion:
+  # cada criterio ve un modo de estar quieto que el otro se pierde. El paso
+  # imprime los tres por separado, que es lo que permite decidir.
+  criterio: ambos
+
+  # Paso del remuestreo, en metros. La celda del DEM, para que la pendiente
+  # de aqui y la del raster hablen de la misma escala. Y paso de DISTANCIA y
+  # no de tiempo: con paso de tiempo la distancia es proporcional a la
+  # velocidad y la relacion velocidad-pendiente sale por aritmetica.
+  paso: 30.0
+
+  # Hueco de grabacion que parte la traza. Ese tiempo no se cuenta ni como
+  # marcha ni como permanencia: se informa aparte.
+  hueco_s: 300.0
+
+  # Velocidad por encima de la cual la traza no es de alguien caminando. Ver
+  # el encabezado de camino/trayectoria.py: en estos tracks el percentil 95
+  # durante la marcha da 0.9-1.8 m/s a pie y 10.3-14.0 en camion.
+  v_max_a_pie: 4.0
