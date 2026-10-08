@@ -172,6 +172,27 @@ def lineas_unidas(camino):
     # toma el tercero como array de salida, y restarle un punto 2D a uno 3D
     # falla al difundir. La altura ya esta en el DEM; en la geometria estorba.
     geoms = [force_2d(g) for g in geoms]
+
+    # UN RECORRIDO GRABADO NO SE UNE: ya viene unido, y en orden de tiempo.
+    #
+    # `unary_union` parte una polilinea en sus AUTOINTERSECCIONES. Para el
+    # registro eso esta bien -- los rasgos llegan sueltos y hay que coserlos--
+    # pero un recorrido que vuelve a pasar por un sitio no es un error, es un
+    # recorrido, y partirlo ahi pierde medio trecho: en el circuito de Qoyllur
+    # Rit'i convertia 20.5 km en 13.2 sin decir nada, porque la vuelta toca el
+    # punto por el que se paso de ida.
+    #
+    # Se mira la columna 'origen' y no la geometria: distinguirlo por si la
+    # linea es simple cambiaria tambien el camino del registro, y ese no se
+    # toca. `trayectoria.como_camino` la pone.
+    if "origen" in getattr(camino, "columns", []) and \
+            (camino["origen"] == "trayectoria").all():
+        piezas = []
+        for g in geoms:
+            piezas.extend(list(g.geoms)
+                          if g.geom_type == "MultiLineString" else [g])
+        return sorted(piezas, key=lambda g: g.length, reverse=True)
+
     u = unary_union(geoms)
     unido = linemerge(u) if u.geom_type != "LineString" else u
     piezas = list(unido.geoms) if unido.geom_type == "MultiLineString" else [unido]

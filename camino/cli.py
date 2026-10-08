@@ -14,7 +14,7 @@ from . import (FECHA, __version__, buscar, caja, campo, config, pipeline,
 
 PASOS = {
     "bajar": (pipeline.bajar, "DEM (dos fuentes) y cuerpos de agua"),
-    "ruta": (None, "el camino observado: de GeoCAM, de un archivo tuyo o de OSM"),
+    "ruta": (None, "el camino observado: de GeoCAM, de un archivo tuyo, de tracks grabados o de OSM"),
     "preparar": (pipeline.preparar_rasteres, "alinear los DEM y armar la mascara del corredor"),
     "superficies": (pipeline.construir_superficies,
                     "pendiente; la rugosidad recorta la mascara; drenaje "
@@ -50,6 +50,9 @@ AYUDAS = {
     "sensibilidad": (pipeline.sensibilidad_sectores,
                      "repite el barrido con otros cortes: dice si la "
                      "estructura por sectores es real o del corte"),
+    "razon": (pipeline.razon_por_franja,
+              "la razon de costo de cada unidad segun el ancho de la franja: "
+              "dice si el desvio es del recorrido o de la escala"),
     "trayectorias": (trayectoria.informe,
                      "tracks grabados: separa marcha de permanencia y dice "
                      "donde se va el tiempo"),

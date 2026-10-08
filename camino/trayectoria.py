@@ -398,6 +398,26 @@ def tramos_de_marcha(traza: Traza, paradas_):
     return salida
 
 
+# Separacion maxima entre el final de un track y el principio del siguiente
+# para que sean el MISMO trecho.
+#
+# Sale de los datos: en el circuito de Qoyllur Rit'i los empalmes entre
+# tracks consecutivos son de 78, 10 y 12 m... y uno de 1888 m. Ese ultimo no
+# es un empalme, es un pedazo sin grabar, y pegarlo dibuja una recta de 2 km
+# por terreno del que no hay dato. Cien metros deja pasar los tres primeros y
+# corta el cuarto.
+SALTO_MAX_M = 100.0
+
+# Y lo mismo en tiempo. Los tres empalmes buenos tienen 0.76, 3.21 y 2.72 h
+# de pausa -- son noches y esperas en la estacion, no interrupciones del
+# recorrido-- y el malo tiene 5.15 h. Cuatro horas los separa.
+#
+# Las DOS condiciones tienen que cumplirse: una pausa larga en el mismo sitio
+# sigue siendo el mismo trecho, y un salto de dos kilometros no deja de serlo
+# por ser rapido.
+SALTO_MAX_H = 4.0
+
+
 def modo(traza: Traza, paradas_, umbral: float = V_MAX_A_PIE) -> str:
     """'pie' o 'vehiculo', mirando la velocidad durante la MARCHA.
 
@@ -598,6 +618,192 @@ def sensibilidad(trazas, radios=(10.0, 20.0, 40.0),
 
 
 # ---------------------------------------------------------------- informe
+
+def trechos(trazas, salto_max_m: float = SALTO_MAX_M,
+            salto_max_h: float = SALTO_MAX_H):
+    """Agrupa los tracks en TRECHOS continuos del recorrido.
+
+    Un track es un archivo, y eso lo decide quien aprieta el boton de grabar:
+    se para a dormir, se apaga el telefono, se cambia de dia. El recorrido no
+    se corta donde se cortan los archivos. Entonces antes de medir nada hay
+    que decidir cuales archivos son el mismo trecho.
+
+    La regla: dos tracks consecutivos en el tiempo son el mismo trecho si el
+    final de uno esta a menos de `salto_max_m` del principio del siguiente Y
+    la pausa entre los dos es de menos de `salto_max_h`. Las dos cosas, no
+    una: una pausa larga en el mismo sitio sigue siendo el mismo trecho (es
+    la noche en la estacion), y un salto de dos kilometros no deja de serlo
+    por ser rapido.
+
+    Esto no es una comodidad de programacion. Pegar un track que empieza a
+    dos kilometros del anterior dibuja una recta por terreno del que no se
+    grabo nada, y esa recta entra en el costo como si se hubiera caminado.
+
+    Devuelve [[Traza, ...]], en orden de tiempo.
+    """
+    if not trazas:
+        return []
+    ordenadas = sorted(trazas, key=lambda z: z.hora_cero)
+    grupos = [[ordenadas[0]]]
+    for z in ordenadas[1:]:
+        a = grupos[-1][-1]
+        salto = float(np.hypot(z.x[0] - a.x[-1], z.y[0] - a.y[-1]))
+        pausa = (z.hora_cero - (a.hora_cero + _dt.timedelta(
+            seconds=float(a.t[-1])))).total_seconds() / 3600.0
+        if salto <= salto_max_m and abs(pausa) <= salto_max_h:
+            grupos[-1].append(z)
+        else:
+            grupos.append([z])
+    return grupos
+
+
+def nombre_de_trecho(grupo) -> str:
+    """Nombre legible de un trecho, a partir de los nombres de sus tracks.
+
+    Los nombres de OsmAnd traen fecha y un rotulo escrito a mano
+    ("2026-06-02_20-00_Tue tayancani"), asi que el rotulo sirve. Se toma el
+    del primero y el del ultimo, que es como se nombra un tramo: "A - B".
+    """
+    def limpia(n):
+        t = n.split("_")
+        trozo = t[-1] if len(t) > 1 else n
+        for dia in ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"):
+            trozo = trozo.replace(dia, "")
+        return " ".join(trozo.split()).strip(" -_") or n
+
+    a, b = limpia(grupo[0].nombre), limpia(grupo[-1].nombre)
+    return a if a == b else f"{a} - {b}"
+
+
+def como_camino(cfg, trazas, solo_a_pie: bool = True,
+                tolerancia: float | None = None):
+    """Los trechos como camino observado, en el formato que usa el pipeline.
+
+    Devuelve un GeoDataFrame con una fila por trecho, columna `tramnomb` y
+    una LineString por geometria -- lo mismo que entrega el registro del
+    Ministerio. Con eso `preparar.unidades`, `revisar`, `nulos` y el barrido
+    funcionan sin tocarse: el recorrido grabado entra como camino observado y
+    no como un caso aparte.
+
+    DOS DECISIONES QUE HAY QUE CONOCER:
+
+    `solo_a_pie`. Los tramos en vehiculo se dejan fuera por omision. No es
+    limpieza: una carretera moderna esta trazada buscando ahorro con
+    maquinaria, asi que su razon de costo mide la ingenieria vial de hoy y
+    no la eleccion de nadie que camine. Medir el tiempo de esos tramos si
+    tiene sentido, y `trayectorias` los mide; modelarlos como camino, no.
+
+    `tolerancia`. La linea se simplifica con Douglas-Peucker. El motivo no
+    es el costo -- `costo_de_seguir_el_trazado` resuelve el optimo dentro de
+    una franja alrededor del trazado, asi que el serpenteo del GPS ya queda
+    absorbido ahi-- sino las metricas de forma: sobre un track crudo,
+    `giro_maximo` sale cerca de 180 grados en cualquier trecho porque el fix
+    baila, y la sinuosidad mide el baile y no el recorrido.
+
+    Por omision la tolerancia es UNA CELDA del DEM. El modelo no puede
+    distinguir nada mas fino que su propia celda, asi que un vertice a menos
+    de eso del anterior no aporta informacion que el modelo pueda usar.
+    """
+    import geopandas as gpd
+    from shapely.geometry import LineString
+
+    tol = cfg.resolucion if tolerancia is None else float(tolerancia)
+    radio = getattr(cfg, "parada_radio", RADIO_PARADA_M)
+    minimo = getattr(cfg, "parada_min_s", MIN_PARADA_S)
+    criterio = getattr(cfg, "parada_criterio", "ambos")
+    v_max = getattr(cfg, "v_max_a_pie", V_MAX_A_PIE)
+
+    usables = []
+    for z in trazas:
+        m = modo(z, paradas(z, radio, minimo, criterio), v_max)
+        if solo_a_pie and m == "vehiculo":
+            continue
+        usables.append(z)
+    fuera = len(trazas) - len(usables)
+    if fuera:
+        print(f"  {fuera} trazas en vehiculo fuera del camino observado "
+              "(se miden en 'trayectorias', no se modelan).")
+    if not usables:
+        raise SystemExit(
+            "Ninguna traza a pie. Si de verdad quieres modelar los tramos\n"
+            "en vehiculo, llama a como_camino con solo_a_pie=False, pero\n"
+            "una carretera moderna mide la ingenieria de hoy y no una\n"
+            "eleccion de recorrido.")
+
+    filas, geoms = [], []
+    for grupo in trechos(usables):
+        xs = np.concatenate([z.x for z in grupo])
+        ys = np.concatenate([z.y for z in grupo])
+        cruda = LineString(_sin_repetidos(np.column_stack([xs, ys])))
+        linea = cruda if tol <= 0 else cruda.simplify(tol)
+        linea = LineString(_sin_repetidos(np.asarray(linea.coords)))
+        if linea.length < cfg.resolucion:
+            continue
+        filas.append({
+            "tramnomb": nombre_de_trecho(grupo),
+            # Marca el origen para `preparar.lineas_unidas`: un recorrido ya
+            # viene unido y no se puede pasar por unary_union, que lo partiria
+            # en sus autointersecciones.
+            "origen": "trayectoria",
+            "tracks": len(grupo),
+            "vertices_crudos": len(cruda.coords),
+            "vertices": len(linea.coords),
+            "largo_km": round(linea.length / 1000, 3),
+        })
+        geoms.append(linea)
+
+    gdf = gpd.GeoDataFrame(filas, geometry=geoms, crs=cfg.crs)
+    print(f"\n  --- trechos del recorrido (tolerancia {tol:g} m) ---")
+    print(f"  {'trecho':38s} {'tracks':>6s} {'km':>7s} "
+          f"{'vertices':>9s} {'crudos':>8s}")
+    for f in filas:
+        print(f"  {f['tramnomb'][:38]:38s} {f['tracks']:6d} "
+              f"{f['largo_km']:7.2f} {f['vertices']:9d} "
+              f"{f['vertices_crudos']:8d}")
+    corto = [f for f in filas if f["largo_km"] * 1000 < cfg.largo_min_unidad]
+    if corto:
+        print(f"\n  {len(corto)} trechos no llegan a "
+              f"{cfg.largo_min_unidad / 1000:.1f} km y 'preparar.unidades' "
+              "los va a dejar")
+        print(f"  fuera: {', '.join(f['tramnomb'][:24] for f in corto)}.")
+        print("  Si los quieres dentro, baja 'barrido.largo_min_unidad'.")
+    return gdf
+
+
+def _sin_repetidos(xy, eps: float = 0.01):
+    """Quita vertices consecutivos que son el mismo punto.
+
+    UN VERTICE REPETIDO PARTE LA LINEA. `preparar.lineas_unidas` pasa por
+    `unary_union` y `linemerge`, y un punto duplicado en medio de una
+    polilinea produce un segmento de largo cero: el union lo trata como un
+    nodo y la linea sale en tres piezas, de las que `unidades` se queda con
+    la mayor. En el circuito de Qoyllur Rit'i eso convertia 20.5 km de
+    trecho en 13.2, sin ningun aviso.
+
+    Aparece al pegar tracks: el final de uno y el principio del siguiente
+    estan a unos metros, y al simplificar colapsan al mismo punto.
+    """
+    xy = np.asarray(xy, dtype=float)[:, :2]
+    if len(xy) < 2:
+        return xy
+    d = np.hypot(np.diff(xy[:, 0]), np.diff(xy[:, 1]))
+    queda = np.concatenate([[True], d > eps])
+    salida = xy[queda]
+    return salida if len(salida) >= 2 else xy[[0, -1]]
+
+
+def camino_observado(cfg, solo_a_pie: bool = True, tolerancia=None):
+    """Lee los GPX de datos/trayectorias/ y los devuelve como camino."""
+    trazas = []
+    for p in _archivos(cfg):
+        try:
+            trazas.append(lee(p, cfg.crs))
+        except SystemExit as e:
+            print(f"    (se omite {p.name}: {e})")
+    if not trazas:
+        raise SystemExit("ninguna traza utilizable en datos/trayectorias/")
+    return como_camino(cfg, trazas, solo_a_pie, tolerancia)
+
 
 def _archivos(cfg):
     carpeta = cfg.dir_datos / "trayectorias"

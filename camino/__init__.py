@@ -31,6 +31,7 @@ Modulos, en el orden en que se usan:
     red            el Qhapaq Nan como RED (no la rejilla): otra pregunta
     campo          de la razon de costo a una salida de campo: estaciones
     trayectoria    tracks grabados: el camino CON reloj, marcha y permanencia
+                   y, como fuente de 'ruta', el recorrido como camino observado
 """
 
 __version__ = "0.21.0"

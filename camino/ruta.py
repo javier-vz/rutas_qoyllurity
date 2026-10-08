@@ -24,7 +24,7 @@ import pathlib
 
 import requests
 
-FUENTES = ("auto", "geocam", "archivo", "osm")
+FUENTES = ("auto", "geocam", "archivo", "osm", "trayectorias")
 
 # Extensiones de geometria que se reconocen en datos/, por orden de
 # preferencia: el KMZ/KML del registro trae las categorias del Ministerio y
@@ -104,6 +104,12 @@ def desde_osm(cfg, sesion=None):
     return g
 
 
+def hay_trayectorias(cfg) -> bool:
+    """Si hay tracks grabados en datos/trayectorias/."""
+    carpeta = cfg.dir_datos / "trayectorias"
+    return carpeta.is_dir() and any(carpeta.glob("*.gpx"))
+
+
 def busca_archivo(cfg):
     """El mejor archivo de geometria que haya en datos/, o None.
 
@@ -115,11 +121,34 @@ def busca_archivo(cfg):
         if not p.is_file() or p.name in PROPIOS:
             continue
         ext = p.suffix.lower()
-        if ext in EXTENSIONES:
-            candidatos.append((EXTENSIONES.index(ext), p.name, p))
+        if ext not in EXTENSIONES:
+            continue
+        if ext == ".gpx" and not _tiene_traza(p):
+            # Un GPX de solo waypoints NO es un camino: son puntos sueltos.
+            # Pasa de verdad -- los favoritos del GPS con las estaciones
+            # planificadas viven en datos/-- y sin esto se tomaria como
+            # geometria del camino observado y el estudio entero mediria
+            # una nube de puntos.
+            print(f"  ({p.name} solo trae waypoints, no es un camino)")
+            continue
+        candidatos.append((EXTENSIONES.index(ext), p.name, p))
     if not candidatos:
         return None
     return sorted(candidatos)[0][2]
+
+
+def _tiene_traza(p) -> bool:
+    """Si un GPX trae puntos de track o de ruta, y no solo waypoints."""
+    import xml.etree.ElementTree as ET
+    try:
+        raiz = ET.parse(p).getroot()
+    except ET.ParseError:
+        return False
+    gpx = "{http://www.topografix.com/GPX/1/1}"
+    for etiqueta in (gpx + "trkpt", gpx + "rtept", "trkpt", "rtept"):
+        if next(raiz.iter(etiqueta), None) is not None:
+            return True
+    return False
 
 
 def filtra_tramo(cfg, qn):
@@ -179,8 +208,17 @@ def importar(cfg, fuente: str = "auto", archivo=None, forzar: bool = False):
         if hallado is not None:
             print(f"  encontrado en datos/: {hallado.name}")
             fuente, archivo = "archivo", hallado
+        elif hay_trayectorias(cfg):
+            # Si no hay archivo de geometria pero si hay tracks grabados, el
+            # camino observado son ellos: es un proyecto de recorrido y no de
+            # registro. Se dice en voz alta porque cambia QUE se compara.
+            print("  no hay archivo de geometria, pero si datos/"
+                  "trayectorias/:")
+            print("  el camino observado sale de los tracks grabados")
+            fuente = "trayectorias"
         else:
-            print("  no hay ningun archivo de geometria en datos/; pruebo GeoCAM")
+            print("  no hay ningun archivo de geometria en datos/; pruebo "
+                  "GeoCAM")
             fuente = "geocam"
     elif fuente == "auto":
         fuente = "archivo"
@@ -196,6 +234,12 @@ def importar(cfg, fuente: str = "auto", archivo=None, forzar: bool = False):
     elif fuente == "osm":
         print("  bajando trazas de OpenStreetMap (APANO PROVISIONAL)")
         qn = desde_osm(cfg)
+    elif fuente == "trayectorias":
+        # Los tracks grabados COMO camino observado. Salen ya agrupados en
+        # trechos continuos y con 'tramnomb', asi que de aqui en adelante el
+        # pipeline no distingue este caso del registro.
+        from . import trayectoria
+        qn = trayectoria.camino_observado(cfg)
     else:
         raise SystemExit(f"fuente desconocida: {fuente}. Usa una de {FUENTES}")
 
@@ -208,9 +252,26 @@ def importar(cfg, fuente: str = "auto", archivo=None, forzar: bool = False):
         raise SystemExit(
             "despues de aplicar 'datos.tramos_excluidos' no quedo nada")
 
-    qn = descarga.recorta(qn, cfg)
-    if qn.empty:
-        raise SystemExit("no quedo nada dentro de la caja del tramo")
+    if fuente == "trayectorias":
+        # UN RECORRIDO GRABADO NO SE RECORTA.
+        #
+        # Dos razones. La primera es de sentido: no se puede quitar un pedazo
+        # de por donde camino alguien y seguir llamandolo su recorrido. Si una
+        # parte cae fuera de la caja, el problema es la caja y hay que decirlo,
+        # no cortar la linea en silencio.
+        #
+        # La segunda es tecnica y muerde fuerte: `gpd.clip` interseca, y la
+        # interseccion de una polilinea NO SIMPLE con un rectangulo la NODIFICA
+        # -- la parte en cada autointerseccion-- aunque el rectangulo la
+        # contenga entera. Un recorrido que vuelve a pasar por un sitio es no
+        # simple por definicion. En el circuito de Qoyllur Rit'i eso devolvia
+        # tres piezas de 7.3, 0.0 y 13.2 km en lugar de una de 20.5, y
+        # `unidades` se quedaba con la mayor.
+        _avisa_si_sale_de_la_caja(cfg, qn)
+    else:
+        qn = descarga.recorta(qn, cfg)
+        if qn.empty:
+            raise SystemExit("no quedo nada dentro de la caja del tramo")
 
     qn = filtra_tramo(cfg, qn)
     qn.to_file(destino, layer="camino", driver="GPKG")
@@ -220,3 +281,31 @@ def importar(cfg, fuente: str = "auto", archivo=None, forzar: bool = False):
         print("\n  RECUERDA: esto es un apano para que el codigo corra.")
         print("  No es el registro del Ministerio y no vale para publicar.")
     return destino
+
+
+def _avisa_si_sale_de_la_caja(cfg, qn) -> None:
+    """Dice si algun trecho grabado se sale de la caja del estudio.
+
+    No corta: avisa. Un trecho que se sale tiene un extremo o un pedazo sin
+    terreno debajo, asi que su ruta optima se calcula contra un DEM con
+    agujero y su razon de costo no vale. La decision es ensanchar la caja,
+    y esa no la toma el codigo.
+    """
+    import geopandas as gpd
+    from shapely.geometry import box
+
+    caja = gpd.GeoSeries([box(*cfg.bbox)], crs="EPSG:4326").to_crs(cfg.crs)[0]
+    malos = []
+    for _, fila in qn.iterrows():
+        fuera = fila.geometry.difference(caja)
+        if not fuera.is_empty and fuera.length > cfg.resolucion:
+            malos.append((str(fila.get("tramnomb", "?")), fuera.length))
+    if not malos:
+        return
+    print("\n  AVISO: estos trechos se salen de la caja del estudio:")
+    for nombre, largo in sorted(malos, key=lambda r: -r[1]):
+        print(f"    {nombre[:38]:40s} {largo / 1000:6.2f} km fuera")
+    print("  No se recortan -- recortar un recorrido grabado no significa")
+    print("  nada-- pero ahi no hay terreno debajo y la razon de costo de")
+    print("  esos trechos no vale. Ensancha el bbox y vuelve a correr desde")
+    print("  'bajar', o quita esos tracks de datos/trayectorias/.")

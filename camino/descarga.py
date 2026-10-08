@@ -327,6 +327,16 @@ def continuo_mayor(qn) -> tuple[float, int]:
     geoms = [g for g in qn.geometry if g is not None and not g.is_empty]
     if not geoms:
         return 0.0, 0
+
+    # Un recorrido grabado ya viene cosido y en orden de tiempo, y puede
+    # volver a pasar por un sitio. `unary_union` lo partiria ahi y este
+    # inventario diria que el trecho es mas corto de lo que es -- 13.2 km en
+    # vez de 20.5 en el circuito de Qoyllur Rit'i-- justo en la tabla que se
+    # mira para decidir si hay camino suficiente.
+    if "origen" in getattr(qn, "columns", []) and \
+            (qn["origen"] == "trayectoria").all():
+        return float(max(g.length for g in geoms)), len(geoms)
+
     u = unary_union(geoms)
     m = linemerge(u) if u.geom_type != "LineString" else u
     piezas = list(m.geoms) if m.geom_type == "MultiLineString" else [m]

@@ -1,0 +1,22 @@
+[
+  {
+    "unidad": "santuario wataskama - 2026-06-03_06-20_Wed",
+    "largo_km": 20.52,
+    "optimo": 18328.8,
+    "razon_2": 1.073,
+    "razon_3": 1.064,
+    "razon_5": 1.051,
+    "razon_8": 1.038,
+    "razon_12": 1.034
+  },
+  {
+    "unidad": "Mahu santuario",
+    "largo_km": 8.7,
+    "optimo": 13490.9,
+    "razon_2": 1.028,
+    "razon_3": 1.016,
+    "razon_5": 1.007,
+    "razon_8": 1.0,
+    "razon_12": 1.0
+  }
+]

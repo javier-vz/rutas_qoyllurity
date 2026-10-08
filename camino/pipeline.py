@@ -255,6 +255,7 @@ def revisar_grafo(cfg):
     # sin volver a imprimir el aviso: `preparar.unidades` ya lo dio
     recortadas = {n for n, geom in uds
                   if preparar.recortada_por_la_caja(cfg, geom)}
+    origen = _origen_de_las_unidades(cfg)
 
     w = np.zeros(len(g.nombres))
     w[0] = 1.0
@@ -285,6 +286,7 @@ def revisar_grafo(cfg):
 
         fila = {
             "unidad": nombre,
+            "origen": origen.get(nombre, "registro"),
             "recortada_por_la_caja": nombre in recortadas,
             "nodos_vecindad": int(sub.n),
             "largo_observado_km": round(linea.length / 1000, 2),
@@ -417,6 +419,29 @@ def _avisa_de_la_geometria(filas, cerca_m: float = 150.0,
     """
     avisos = []
     for f in filas:
+        # UN RECORRIDO GRABADO NO ESTA COSIDO POR NADIE.
+        #
+        # Esta comprobacion busca uniones espurias de `linemerge`: en el
+        # registro, la "pieza mayor" de un tramo con horquilla puede ser una
+        # rama de ida pegada a una de vuelta, y ajustar un costo contra eso no
+        # significa nada. Un track grabado no tiene ese problema: viene en
+        # orden de tiempo y cada vertice se piso de verdad.
+        #
+        # Y ahi una inversion de 176 grados es un DATO, no un defecto: la
+        # gente se devolvio. El circuito de Qoyllur Rit'i da justo eso, y sin
+        # esta salida el aviso suena en cada corrida sobre la unidad principal
+        # -- que es la peor manera de tener un aviso, porque se aprende a
+        # ignorarlo.
+        if f.get("origen") == "trayectoria":
+            if f["giro_maximo_grados"] > giro_max:
+                print(f"\n  {f['unidad'][:44]} se devuelve sobre si misma "
+                      f"({f['giro_maximo_grados']:.0f} grados de giro,")
+                print(f"  pasa a {f['autoproximidad_m']:.0f} m de si misma). "
+                      "En un recorrido grabado eso no es")
+                print("  un defecto de geometria: es parte del recorrido, y "
+                      "vale preguntarse donde")
+                print("  y por que se devolvio.")
+            continue
         motivos = []
         if f["autoproximidad_m"] < cerca_m:
             motivos.append(
@@ -438,6 +463,28 @@ def _avisa_de_la_geometria(filas, cerca_m: float = 150.0,
         print("    de ida y otra de vuelta. Miralo en QGIS antes de creerte")
         print("    su sinuosidad o su razon de costo.")
     return avisos
+
+
+def _origen_de_las_unidades(cfg) -> dict:
+    """De donde salio el camino de cada unidad: 'registro' o 'trayectoria'.
+
+    Varios diagnosticos solo tienen sentido para uno de los dos casos, y
+    hacerlos depender de la geometria seria adivinar. La columna la pone
+    `trayectoria.como_camino`.
+    """
+    import geopandas as gpd
+
+    ruta = cfg.dir_datos / "qn_geocam.gpkg"
+    if not ruta.exists():
+        return {}
+    try:
+        qn = gpd.read_file(ruta, layer="camino")
+    except Exception:
+        return {}
+    if "origen" not in qn.columns or "tramnomb" not in qn.columns:
+        return {}
+    return {str(k): str(v) for k, v in
+            zip(qn["tramnomb"], qn["origen"].fillna("registro"))}
 
 
 def _explica_corte(cfg, sub, costos, o, d, nombre) -> None:
@@ -1085,7 +1132,8 @@ def _figura_perfil(cfg, taus, perfiles):
     return ruta
 
 
-def costo_de_seguir_el_trazado(cfg, g, t6, geometria, w, o_xy, d_xy):
+def costo_de_seguir_el_trazado(cfg, g, t6, geometria, w, o_xy, d_xy,
+                               anchos=(2, 3, 5, 8)):
     """Costo del modelo a lo largo del trazado OBSERVADO.
 
     Es la pieza que faltaba para interpretar la distancia geometrica. Una
@@ -1119,7 +1167,7 @@ def costo_de_seguir_el_trazado(cfg, g, t6, geometria, w, o_xy, d_xy):
     # cada vertice en vez de una banda continua, y no conecta nunca.
     denso = LineString(preparar.vertices(geometria, paso=cfg.resolucion / 2))
 
-    for celdas in (2, 3, 5, 8):
+    for celdas in anchos:
         radio = celdas * cfg.resolucion
         nodos = g.nodos_cerca_de(denso, t6, radio)
         if len(nodos) < 2:
@@ -1133,3 +1181,109 @@ def costo_de_seguir_el_trazado(cfg, g, t6, geometria, w, o_xy, d_xy):
         if np.isfinite(dist[d]):
             return float(dist[d]), celdas
     return float("nan"), 0
+
+
+# ------------------------------------------- la razon de costo y su franja
+
+def razon_por_franja(cfg, anchos=(2, 3, 5, 8, 12)):
+    """La razon de costo de cada unidad, en funcion del ANCHO DE LA FRANJA.
+
+    `revisar` informa UNA razon por unidad, y lo hace con la franja mas
+    estrecha que logre conectar los dos extremos: empieza en 2 celdas y
+    ensancha solo si hace falta. Eso esta bien como numero unico, pero
+    esconde que el numero depende del ancho, y el ancho no es neutral.
+
+    Por que depende. La razon compara el costo de ir POR DONDE VA EL TRAZADO
+    con el optimo libre. "Por donde va el trazado" se calcula resolviendo el
+    optimo dentro de una franja alrededor de la linea observada, asi que:
+
+      - franja estrecha -> el camino esta obligado a seguir el trazado de
+        cerca, incluido su serpenteo, y la razon sale ALTA;
+      - franja ancha -> el camino puede cortar las curvas por dentro, se
+        parece cada vez mas al optimo libre, y la razon BAJA hacia 1.
+
+    O sea el ancho es la escala a la que se pregunta. Una razon alta con
+    franja ancha es un desvio de verdad: ni dandole 360 m de margen el
+    modelo encuentra como pasar por ahi barato. Una razon que se desploma al
+    ensanchar era serpenteo o un rodeo local.
+
+    Esto importa especialmente con trazados GRABADOS. Una linea del registro
+    viene digitalizada sobre imagen y es lisa; un track de GPS con un fix
+    cada 16 s y hdop 3 baila, y ese baile sube la razon sin que corresponda
+    a ninguna decision de quien caminaba. La tabla separa las dos cosas.
+
+    Y tambien avisa de lo contrario: si una unidad NO conecta con 2 celdas
+    pero si con 5, su razon de `revisar` se midio con una franja mas ancha
+    que las demas y es, por construccion, mas baja. Comparar esa con las
+    otras subestima su desvio.
+    """
+    import csv
+
+    g, t, uds = _carga_unidades(cfg)
+    w = np.zeros(len(g.nombres))
+    w[0] = 1.0
+
+    print(f"\n  La razon se mide resolviendo el optimo dentro de una franja")
+    print(f"  alrededor del trazado. Franja de n celdas = {cfg.resolucion:g}n "
+          "m de margen a cada lado.")
+
+    filas = []
+    for nombre, linea in uds:
+        from scipy.sparse.csgraph import dijkstra
+        sub, o, d, obs, t6 = _contexto(cfg, g, t, linea,
+                                       con_componentes=False)
+        dist = dijkstra(sub.costos(w), directed=True, indices=o)
+        opt = float(dist[d])
+        extremos = (np.array(linea.coords[0][:2]),
+                    np.array(linea.coords[-1][:2]))
+        fila = {"unidad": nombre, "largo_km": round(linea.length / 1000, 2),
+                "optimo": round(opt, 1)}
+        for n in anchos:
+            c, usado = costo_de_seguir_el_trazado(
+                cfg, g, t6, linea, w, extremos[0], extremos[1], anchos=(n,))
+            fila[f"razon_{n}"] = (round(c / opt, 3)
+                                  if usado and opt > 0 and np.isfinite(c)
+                                  else None)
+        filas.append(fila)
+
+    cab = "  ".join(f"{'f' + str(n):>7s}" for n in anchos)
+    print(f"\n  {'unidad':30s} {'km':>6s}   {cab}")
+    for f in filas:
+        vals = "  ".join(
+            ("      -" if f[f'razon_{n}'] is None
+             else f"{f[f'razon_{n}']:7.2f}") for n in anchos)
+        print(f"  {f['unidad'][:30]:30s} {f['largo_km']:6.2f}   {vals}")
+
+    print(f"\n  f{anchos[0]} es la franja mas estrecha; f{anchos[-1]} da "
+          f"{cfg.resolucion * anchos[-1]:.0f} m de margen a cada lado.")
+    print("  Un '-' quiere decir que con esa franja los extremos no se")
+    print("  conectan: el trazado roza celda enmascarada o pasa entre dos.")
+
+    estables, blandas = [], []
+    for f in filas:
+        v = [f[f"razon_{n}"] for n in anchos if f[f"razon_{n}"] is not None]
+        if len(v) >= 2:
+            caida = (v[0] - v[-1]) / v[0] if v[0] else 0.0
+            (blandas if caida > 0.20 else estables).append(
+                (f["unidad"], v[0], v[-1], caida))
+    if estables:
+        print("\n  AGUANTAN el ensanchado (menos de 20% de caida): el desvio")
+        print("  es del recorrido y no de la escala.")
+        for n, a, b, c in sorted(estables, key=lambda r: -r[2]):
+            print(f"    {n[:34]:36s} {a:5.2f} -> {b:5.2f}  "
+                  f"({100*c:+5.1f}%)")
+    if blandas:
+        print("\n  SE DESPLOMAN al ensanchar: ahi la razon alta era serpenteo")
+        print("  del trazado o un rodeo local, no un desvio sostenido.")
+        for n, a, b, c in sorted(blandas, key=lambda r: -r[3]):
+            print(f"    {n[:34]:36s} {a:5.2f} -> {b:5.2f}  "
+                  f"({100*c:+5.1f}%)")
+
+    destino = cfg.dir_resultados / "razon_por_franja.csv"
+    with open(destino, "w", newline="", encoding="utf-8") as fh:
+        wr = csv.DictWriter(fh, fieldnames=list(filas[0].keys()))
+        wr.writeheader()
+        wr.writerows(filas)
+    print(f"\n  -> {destino.relative_to(cfg.raiz)}")
+    _guarda_json(cfg, "razon_por_franja.json", filas)
+    return filas

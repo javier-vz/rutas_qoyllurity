@@ -1,131 +1,96 @@
-# Camino inca, tramo Leimebamba – Chachapoyas
+# Qoyllur Rit'i — el recorrido de la peregrinación
 
-La pregunta no es por dónde pasó el camino —eso ya está registrado— sino
-**qué variables del terreno explican por dónde pasó, y si son las mismas a lo
-largo de todo el tramo**.
+Valle de Sinakara – Ausangate, provincia de Quispicanchi, Cusco.
 
-Este archivo es cómo correrlo. Las ecuaciones y el porqué de cada decisión
-están en [`METODO.md`](METODO.md).
+Paquete `camino` 0.21.0 · esta carpeta se armó el 8 de octubre de 2026.
+
+Es una carpeta de proyecto completa: el bbox, el CRS y los derivados son
+suyos, y el programa se para si el bbox no coincide con los rásteres de
+`derivados/`. Si usas el paquete para otra zona, hazlo en otra carpeta.
 
 ---
 
 ## Contenido
 
-1. [Cómo está organizada la carpeta](#1-cómo-está-organizada-la-carpeta)
-2. [Instalar el entorno](#2-instalar-el-entorno-una-sola-vez)
-3. [La llave de OpenTopography](#3-la-llave-de-opentopography-una-sola-vez)
+1. [La pregunta](#1-la-pregunta)
+2. [Cómo está organizada la carpeta](#2-cómo-está-organizada-la-carpeta)
+3. [El entorno y la llave](#3-el-entorno-y-la-llave)
 4. [Correr el estudio](#4-correr-el-estudio)
-5. [El camino observado: de dónde sale](#5-el-camino-observado-de-dónde-sale)
-6. [Los espacios ceremoniales: el archivo que falta](#6-los-espacios-ceremoniales-el-archivo-que-falta)
-7. [Qué mirar en los resultados](#7-qué-mirar-en-los-resultados)
-8. [Los parámetros](#8-los-parámetros)
-9. [Si algo falla](#9-si-algo-falla)
+5. [Lo que ya salió](#5-lo-que-ya-salió)
+6. [Los parámetros](#6-los-parámetros)
+7. [Lo que falta](#7-lo-que-falta)
+8. [Qué no se publica](#8-qué-no-se-publica)
 
 ---
 
-## 1. Cómo está organizada la carpeta
+## 1. La pregunta
 
-El zip trae dentro una carpeta llamada `leimebamba/`. Descomprímelo **en la
-carpeta que la contiene** (`C:\Users\jvera\Documents`), no dentro de
-`leimebamba`: así cae encima de la que ya tienes y reemplaza el programa sin
-tocar `datos/`, `derivados/` ni `resultados/`.
+**Qué sostiene la forma de una peregrinación.**
 
-El zip **sí trae `config.yaml`**, con la caja del estudio ya puesta, así que
-al descomprimir queda listo para correr. Eso significa que si lo tenías
-editado, se reemplaza.
+Una peregrinación es movimiento colectivo que se reproduce cada año, con
+decenas de miles de personas, sin que nadie la haya diseñado y sin que nadie
+la administre. Tiene una forma reconocible y la mantiene. Hay etnografía
+abundante de Qoyllur Rit'i —lo que significa, quiénes van, qué se hace— y no
+hay una descripción de cómo se mueve: dónde se va el tiempo, qué fija el
+ritmo, por qué el recorrido tiene la geometría que tiene.
 
-Lo que importa de verdad es el bbox, y ése está protegido: si el bbox de
-`config.yaml` no coincide con los rásteres que hay en `derivados/`, el
-programa **se para y lo dice**, con las dos cajas y las dos salidas
-posibles. No sigue y no da números medidos con la rejilla equivocada — que
-es lo que pasaba antes de ese chequeo, en silencio.
+La hipótesis de partida es que **una peregrinación no es una ruta, es un
+horario con lugares**: hay sitios que hay que tocar y horas a las que hay que
+tocarlos, y caminar es lo que conecta los sitios, no el propósito. Si eso es
+así, una ruta de mínimo costo no puede producir el recorrido, porque una
+curva que minimiza $\int C\,\mathrm{d}s$ no tiene reloj.
 
-`config.yaml` lleva dentro la versión con que se escribió. Si eliges no
-reemplazarlo al descomprimir y le faltan parámetros nuevos, el programa te
-avisa al arrancar.
+Para contestarlo se miden tres cosas:
 
-Para comprobar que quedó la versión nueva, cualquier comando imprime ahora
-su versión y la carpeta desde la que corre:
+1. **Dónde se va el tiempo** — marcha contra permanencia, por trecho, por
+   hora del día y por altitud.
+2. **Cuánto se aparta el recorrido del óptimo físico** — y, sobre todo, si el
+   costo llega a distinguir las dos cosas.
+3. **Si el recorrido está organizado respecto del Ausangate** — visibilidad
+   del nevado desde la ruta y desde las estaciones.
 
-```
-camino 0.5.0 (2026-10-05)
-proyecto: C:\Users\jvera\Documents\leimebamba
-```
-
-Si ahí sale otra carpeta, estás corriendo otra copia.
-
-```
-leimebamba/
-│
-├── config.yaml          ← el único archivo que vas a editar
-├── environment.yml         receta del entorno de conda
-├── README.md               este archivo
-├── METODO.md               las ecuaciones
-│
-├── camino/                 el programa (no hace falta abrirlo)
-├── tests/                  las pruebas
-│
-├── datos/               ← aquí caen las descargas, solas
-│   └── gpx/             ← aquí van los .gpx del Garmin, cuando lleguen
-├── derivados/           ← aquí caen los rásteres calculados, solos
-└── resultados/          ← aquí caen las tablas y las figuras, solas
-```
-
-Las tres carpetas de abajo empiezan vacías y **el programa las llena solo**.
-No tienes que bajar ni mover ningún archivo a mano, con una excepción: los
-`.gpx` del Garmin, que van a `datos/gpx/` cuando Dina vuelva del campo.
+El dato es un registro GPS de la peregrinación de junio de 2026: doce tracks
+de OsmAnd, un punto cada 15–16 s, con `hdop` y con la velocidad que declara
+el propio receptor.
 
 ---
 
-## 2. Instalar el entorno (una sola vez)
+## 2. Cómo está organizada la carpeta
 
-Abre la **consola de Anaconda** (en Windows, *Anaconda Prompt*; búscala en el
-menú de inicio). Entra a la carpeta y crea el entorno:
+```
+qoyllur/
+├── camino/                     el paquete
+├── config.yaml                 los parámetros del estudio
+├── datos/
+│   ├── trayectorias/           los doce .gpx grabados, con sello de tiempo
+│   ├── favoritos_qoyllurity_2026.gpx    los waypoints marcados en el GPS
+│   ├── qn_geocam.gpkg          el camino observado, que arma 'ruta'
+│   ├── cop30_raw.tif           lo que baja 'bajar'
+│   └── aw3d30_raw.tif
+├── derivados/                  lo que arman 'preparar' y 'superficies'
+├── resultados/                 las salidas
+├── environment.yml
+├── METODO.md                   las ecuaciones
+└── README.md                   esto
+```
 
-```bash
-cd C:\Users\jvera\Documents\leimebamba
+`datos/trayectorias/` es la entrada del paso nuevo y, a través de `ruta`, la
+fuente del camino observado: **aquí el recorrido grabado hace de camino**, no
+hay una línea de registro aparte.
+
+---
+
+## 3. El entorno y la llave
+
+Todo desde el **Anaconda Prompt**.
+
+```
 conda env create -f environment.yml
 conda activate camino
 ```
 
-Tarda unos minutos la primera vez. Comprueba que quedó bien:
-
-```bash
-python -m pytest -q
-```
-
-Tienen que pasar **243 pruebas** en dos o tres segundos. Si falla algo aquí,
-falla antes de tocar datos, que es cuando conviene.
-
-> **Cada vez que abras la consola de nuevo**, dos cosas: `conda activate
-> camino` y `cd` a la carpeta del proyecto. Si Python dice que no encuentra un
-> paquete, casi siempre es que falta el `conda activate`.
-
-No hace falta QGIS, ArcGIS, GRASS ni comandos de GDAL. El programa hace la
-reproyección, el recorte, la hidrología y el grafo en Python. QGIS sólo sirve
-al final, para mirar los resultados en un mapa.
-
----
-
-## 3. La llave de OpenTopography (una sola vez)
-
-Es gratis e inmediata, y sirve para bajar los modelos de elevación.
-
-1. Entra a <https://portal.opentopography.org/> y créate una cuenta.
-2. Ve a **My Account** y pide una *API key*.
-3. Dísela a la consola, en la misma ventana donde vas a trabajar:
-
-```bash
-set OPENTOPOGRAPHY_API_KEY=pega_aqui_tu_llave          REM Windows
-export OPENTOPOGRAPHY_API_KEY=pega_aqui_tu_llave       # Linux / macOS
-```
-
-Eso dura mientras la ventana esté abierta; si la cierras, hay que repetirlo.
-Se hace así, y no se guarda en un archivo, para que la llave no acabe subida
-al repositorio sin querer.
-
-Si te cansa repetirlo, conda la puede guardar **dentro del entorno**, que es
-mejor que dejarla suelta en el sistema:
+Para la llave de OpenTopography, lo más cómodo es que conda la guarde dentro
+del entorno:
 
 ```
 conda activate camino
@@ -134,564 +99,233 @@ conda activate camino
 ```
 
 El segundo `conda activate` no es un error de copia: hace falta para que la
-variable entre en la sesión que ya está abierta. Después aparece sola cada
-vez que actives `camino`. Se comprueba con `conda env config vars list` y se
-quita con `conda env config vars unset OPENTOPOGRAPHY_API_KEY`.
+variable entre en la ventana que ya está abierta. Se comprueba con
+`conda env config vars list`.
 
-Ojo que en el Anaconda Prompt el valor va **sin comillas** y sin espacios
-alrededor del `=`: en cmd las comillas entran como parte del valor y la llave
-sale mal.
+En el Anaconda Prompt el valor va **sin comillas** y sin espacios alrededor
+del `=`: en cmd las comillas entran como parte del valor y la llave sale mal,
+y el error que devuelve el portal después no dice eso, dice que la llave es
+inválida.
+
+Si prefieres no guardarla, `set OPENTOPOGRAPHY_API_KEY=...` dura lo que dure
+la ventana.
 
 ---
 
 ## 4. Correr el estudio
 
-### El orden, de una vez
+### El paso que no necesita nada
 
-**Si cambiaste `extension.bbox`** (o es la primera vez), tres comandos:
-
-```bash
-python -m camino bajar --forzar    # el DEM de la caja nueva
-python -m camino ruta  --forzar    # el recorte del registro, de la caja nueva
-python -m camino todo              # el resto, de corrido
+```
+python -m camino trayectorias
 ```
 
-Los dos `--forzar` son obligatorios y no son opcionales de estilo: cambiar la
-caja invalida **todo** lo que hay en `datos/` y `derivados/`. El programa ya
-detecta solo el caso del DEM y lo vuelve a bajar avisando, pero con el
-`--forzar` no hay nada que detectar.
+Funciona sin DEM, sin red y sin llave. Lee los `.gpx`, separa marcha de
+permanencia, clasifica el modo de viaje y escribe en `resultados/`:
 
-**Si NO cambiaste la caja**, uno:
+| archivo | qué trae |
+| --- | --- |
+| `trayectorias.csv` | una fila por track: modo, horas de marcha, horas de parada, km, desnivel, número de paradas, duración mediana |
+| `trayectorias_sensibilidad.csv` | la fracción de tiempo parado según los dos parámetros que la definen |
+| `paradas.gpkg` | las paradas como puntos, capa `paradas`, para QGIS |
 
-```bash
-python -m camino todo
+### El resto
+
+```
+python -m camino bajar          # COP30 y AW3D30 de la caja
+python -m camino preparar       # los alinea, arma la máscara
+python -m camino superficies    # pendiente, rugosidad, drenaje
+python -m camino grafo          # el grafo de vecindad 16 y la matriz Phi
+python -m camino ruta           # los tracks COMO camino observado
+python -m camino revisar        # un óptimo por trecho, para mirarlos
+python -m camino razon          # la razón de costo según el ancho de franja
 ```
 
-Salta `bajar` y `ruta` porque los archivos ya están, y rehace el resto.
+La caja es de 878 × 1204 celdas, un millón de nodos: baja en un par de
+minutos y el grafo pide unos 0.09 GB.
 
-**Para decidir la caja**, antes de todo lo anterior:
+`ruta` detecta sola que el camino observado son los tracks, porque hay
+`datos/trayectorias/` y no hay archivo de geometría. Los agrupa en **trechos**
+continuos: dos tracks consecutivos son el mismo trecho si empalman a menos de
+100 m y menos de 4 h. Esa regla salió de los datos y hace falta — hay un
+empalme de 1888 m con 5.15 h de hueco que no es continuación de nada.
 
-```bash
-python -m camino ruta --forzar
-python -m camino caja
-```
+`preparar` avisa de que la máscara es la caja entera, y está bien: no hay
+corredor al que restringirse, y los óptimos entre los extremos de los tracks
+tienen que poder irse por donde quieran.
 
-**Nunca** `python -m camino todo --forzar`: vuelve a bajar los DEM sin
-necesidad y son varios minutos.
+### Lo que todavía se para
+
+`nulos`, `barrido`, `validar` y `resultados` necesitan el catálogo ceremonial,
+que está por armar (§7).
 
 ---
 
-Diez pasos, en orden. Cada uno deja su resultado en disco, así que puedes
-parar y seguir otro día sin perder nada.
+## 5. Lo que ya salió
 
-```bash
-python -m camino bajar          # 1
-python -m camino ruta           # 2
-python -m camino preparar       # 3
-python -m camino superficies    # 4
-python -m camino grafo          # 5
-python -m camino revisar        # 6
-python -m camino nulos          # 7
-python -m camino barrido        # 8
-python -m camino validar        # 9
-python -m camino resultados     # 10
-```
+### Dónde se va el tiempo
 
-O `python -m camino todo` de corrido.
+De las doce trazas, ocho son a pie (36.5 km) y cuatro en camión (121 km). El
+modo no está puesto a mano: sale del percentil 95 de la velocidad durante la
+marcha, que da entre 0.9 y 1.8 m/s a pie y entre 10.3 y 14.0 en camión.
 
-| # | Paso | Qué hace | Qué escribe | Tarda |
-|---|---|---|---|---|
-| 1 | `bajar` | los dos modelos de elevación y los cuerpos de agua | `datos/cop30_raw.tif`, `datos/aw3d30_raw.tif`, `datos/agua_osm.json` | minutos, según la conexión |
-| 2 | `ruta` | el camino observado (ver §5) | `datos/qn_geocam.gpkg` | segundos |
-| 3 | `preparar` | pone los dos modelos en la misma rejilla, recorta el corredor | `derivados/cop30.tif`, `derivados/mascara.tif` | ~1 min |
-| 4 | `superficies` | pendiente y aspecto; la rugosidad, como **restricción**, recorta la máscara; el drenaje queda de diagnóstico | `derivados/pendiente_rad.tif`, `rugosidad.tif`, `acumulacion.tif`, `mascara.tif` | 2–5 min |
-| 5 | `grafo` | el grafo de tránsito, con una columna por componente | `derivados/grafo.npz` | 1–2 min |
-| 6 | `revisar` | traza **un camino por unidad** para que los mires | `resultados/revision_pendiente.gpkg`, `revision_grafo.json` | segundos |
-| 7 | `nulos` | el conjunto de control: 500 rutas plausibles por unidad, y los dos nulos (geometría y costo) | `derivados/nulos.npz` | **~2 h 15** |
-| 8 | `barrido` | corre **los dos modelos** sobre cada unidad y los compara | `resultados/optimos_por_unidad.json`, `caminos_optimos.gpkg` | ~6 min |
-| 9 | `validar` | la prueba que decide: pesos estimados sin un bloque, medidos **en** ese bloque | `resultados/validacion_bloqueada.json` | ~20 min |
-| 10 | `resultados` | el perfil de equifinalidad y su gráfico | `resultados/perfil_equifinalidad.png` | segundos |
+La fracción de tiempo en permanencia **depende de cómo se defina una parada**,
+y mucho: va de 10% a 71%. Con el criterio del propio receptor (velocidad
+Doppler cero) da 10–15%; con el de dispersión (todos los fijos dentro de 20 m
+durante al menos 2 minutos) da 40–70%. No es que uno esté mal: miden cosas
+distintas, la detención y el desplazarse despacio dentro de una estación. Hay
+que reportar el par.
 
-Los tiempos son **medidos** en la caja del estudio (6.44 M celdas, seis
-tramos completos, vecindades de 150 000 a 290 000 nodos) en la laptop de
-Javier, octubre 2026.
+Lo que **no** se mueve con los parámetros es el orden entre trechos. La
+subida a Colque Punku sale siempre como el más estático —2 km y 414 m de
+desnivel entre las 23:53 y las 04:36— y el descenso final como el más fluido.
 
-`nulos` es el caro con diferencia, y no por el tamaño de la caja sino por el
-número de Dijkstras: 500 realizaciones × 6 unidades = 3 000, contra 126 del
-barrido. Si hay que repetirlo, baja `barrido.m_nulos` — con 200 el piso del
-valor *p* sube de 0.002 a 0.005, que para estos resultados sigue sobrando.
+### El costo no distingue el recorrido de su propio óptimo
 
-Y si enciendes `visibilidad`, el barrido pasa de 21 juegos de pesos a 231:
-cuenta con una hora en vez de seis minutos.
+| trecho | km | separación mediana | Fréchet | **razón de costo** |
+| --- | --- | --- | --- | --- |
+| el circuito de retorno | 20.5 | 463 m | 1792 m | **1.07** |
+| Mahuayani – Santuario | 8.7 | 71 m | 305 m | **1.03** |
 
-Los pasos 8 y 9 necesitan el archivo de espacios ceremoniales (§6). Sin él,
-avisan y te dicen qué hacer en vez de reventar.
+Y es estable: ensanchando la franja de 60 a 360 m, el circuito pasa de 1.07 a
+1.03 y la subida de 1.03 a 1.00.
 
-### Cinco ayudas que no son pasos
+**En la subida el modelo acierta.** Las dos líneas van encimadas los 8.7 km,
+con 71 m de separación mediana y sólo el 4% del recorrido a más de 250 m del
+óptimo. Quien sube a un lugar conocido toma el camino barato, y el modelo lo
+reproduce.
 
-No van en el orden: se corren cuando hacen falta.
+**En el circuito las dos rutas van por sitios distintos y cuestan casi lo
+mismo.** El óptimo corre a 463 m de media del recorrido, con 1792 m de
+Fréchet y el 63% del trayecto a más de 250 m — y cuesta un 7% menos. Se ve en
+`resultados/dos_rutas.png`: el óptimo cruza alto por la ladera mientras lo
+caminado baja al valle, y vuelven a juntarse.
 
-```bash
-python -m camino caja          # qué bbox haría falta para que los tramos
-                               # entren completos, y lo que costaría
-python -m camino buscar        # encuentra la dirección del servicio de GeoCAM
-python -m camino sensibilidad  # repite el barrido con otros cortes (sólo
-                               # tiene sentido con 'unidad: sector')
-python -m camino red           # el Qhapaq Ñan como RED, no como rejilla:
-                               # ¿da el registro para medir centralidad?
-python -m camino campo         # desarma la razón de costo por zonas y arma
-                               # las estaciones de campo, con su GPX
-python -m camino trayectorias  # tracks grabados: separa marcha de permanencia
-                               # y dice dónde se va el tiempo
-```
+Eso es **equifinalidad**: hay muchas maneras de cruzar ese paisaje por un
+precio parecido. Y es un resultado más fuerte que una razón alta. Si el
+circuito costara 1.6 la conclusión sería «lo ceremonial cuesta caro»; lo que
+sale es que **el costo físico no puede explicar la forma del recorrido ni
+descartarla**. La explicación tiene que venir de las estaciones y del horario,
+y la componente ceremonial tiene algo concreto que hacer: dar cuenta de los
+463 m de geometría, no del 7% de costo.
 
-`campo` necesita que `revisar` haya corrido antes, porque trabaja sobre las
-dos líneas que ése produce. Tarda unos 3 minutos y deja en `resultados/` un
-`estaciones.gpx` para el GPS, un `estaciones.gpkg` para QGIS y un
-`estaciones.csv`. Lo que hace está en `METODO.md`, §6 quinquies.
+De paso, eso asciende la tercera pregunta —ruta o horario— de especulativa a
+principal, porque el costo acaba de quedar mostrado como poco informativo
+aquí.
 
-`red` lee el registro **nacional sin recortar**, no la caja del estudio: es
-otra pregunta y necesita todo el sistema. Tarda unos 20 minutos y necesita
-`networkx`.
+### Las paradas señalan estaciones que no están marcadas
 
-`trayectorias` es el único paso que no necesita DEM ni red: lee los `.gpx`
-**con sello de tiempo** que haya en `datos/trayectorias/` y mide el tiempo,
-no la forma. Es para tracks grabados, no para el registro — el registro es
-una línea sin reloj y entra por `ruta`. Deja en `resultados/` un
-`trayectorias.csv`, un `trayectorias_sensibilidad.csv` y un `paradas.gpkg`
-con las paradas como puntos para QGIS. Lo que hace está en `METODO.md`,
-§8 bis ter.
+De las 68 paradas, sólo 12 caen a menos de 300 m de un waypoint del GPS; la
+mediana a la estación marcada más cercana es 1123 m.
 
-Ojo con una cosa: el número principal de ese paso, la fracción de tiempo en
-permanencia, **depende de cómo se defina una parada**, y el paso imprime la
-tabla de sensibilidad al lado del resultado precisamente por eso. En los
-tracks de Qoyllur Rit'i va de 10% a 71% según el criterio. No se reporta un
-número sin decir cuál se usó.
+Eso no refuta nada: los 13 waypoints son los que se alcanzaron a marcar, no un
+catálogo. Lo que dice es lo contrario, y es útil: **las paradas son evidencia
+de dónde están las estaciones**. La más larga —123 minutos a 4611 m, durante
+la marcha nocturna— está a 2.7 km del waypoint más próximo. Ahí hay una
+estación que no está en la lista.
 
-La caja que propone deja **`dominio.buffer_corredor` de aire** alrededor de
-los extremos de los tramos — no un margen redondo cualquiera. Con menos, la
-máscara del corredor queda recortada por el borde de la caja justo donde el
-tramo termina, el camino modelado se pega a ese borde y `revisar` lo marca
-con `B`; y arreglarlo obliga a ensanchar y volver a correr desde `bajar`. Si
-cambias `buffer_corredor`, vuelve a correr `caja`.
+Ese cruce es lo primero que hay que mirar en QGIS, con
+`resultados/qoyllur_qgis.gpkg`, que trae las cuatro capas juntas:
+`recorrido`, `optimo`, `paradas` y `estaciones`.
 
-`caja` imprime una tabla **acumulada**: añade tramos de más barato a más
-caro y te dice, en cada fila, cuántas unidades completas tendrías, cuántas
-celdas y cuánta memoria pediría el grafo. Se eligen tramos, no coordenadas —
-copias el bbox de la fila que te convenga. Con *n* unidades completas salen
-*n(n−1)/2* pares para el perfil de equifinalidad: con 2 hay 1 par (no se
-contrasta nada), con 4 hay 6, con 6 hay 15.
+### La calidad del DEM
 
-### Cuidado con `tramnomb`: no todos los valores son tramos
+La discrepancia entre Copernicus y ALOS es de 1.0–1.4 m de mediana por debajo
+de 4800 m, y sube a 3.5 m sobre 5000, 6.3 sobre 5200 y 9.0 sobre 5500. De las
+293 celdas con más de 100 m de diferencia, el **82% está a menos de 3 km de la
+cumbre del Ausangate** y **ninguna** a menos de 3 km del santuario o de Colque
+Punku.
 
-El registro usa ese campo para dos cosas. Casi todos los valores son tramos
-("A – B"), pero también hay **estados de trabajo del Ministerio** (`En
-proceso`, y `En Proceso` con otra grafía) y rasgos **sin nombre**. Agrupados
-por nombre, dan "tramos" cuya caja envolvente mide mil kilómetros de
-diagonal.
+Es casi lo mejor que podía pasar: el terreno donde se camina está bien sujeto
+y la incertidumbre se concentra en el objetivo de la visibilidad, donde no
+muerde — ±100 m en una cumbre de 6317 m vista desde 27 km cambia el ángulo de
+elevación 0.21°.
 
-Se excluyen **a mano**, por nombre exacto, en `datos.tramos_excluidos`:
+El grafo tiene 13.4 millones de aristas, 13.1 por nodo —el límite de ±45%
+quitó el 18.2% de las 16 posibles— y 855 componentes conexas, de las que la
+mayor tiene el 99.74% de los nodos. Los 16 extremos de los tracks están todos
+dentro de ella.
 
-```yaml
-datos:
-  tramos_excluidos:
-    - ""
-    - "En proceso"
-    - "En Proceso"
-```
+**Una cosa a revisar:** el percentil 99.9 de la pendiente da 89.6°, o sea una
+pared vertical. Es casi seguro un artefacto del ráster y conviene mirarlo
+antes de usarlo.
 
-**Y no con una regla automática.** Hubo una —descartar los grupos con más de
-150 km de diagonal— y estaba mal: declaró que "no son tramos" Xauxa –
-Pachacámac (163 km), La Raya – Desaguadero (293), Pumpu – Pallasca (338) y
-Acostambo – Huamachuco (588), que son secciones reales del Qhapaq Ñan, varias
-inscritas en la UNESCO. El registro es nacional y hay tramos con nombre de
-cientos de kilómetros: ninguna regla geométrica los separa de una etiqueta
-con garantías.
+### Un hallazgo del propio dato
 
-Lo que el programa sí hace es **medir y avisar**. Para cada grupo calcula la
-razón entre la diagonal de su caja y los kilómetros de línea que contiene. Un
-camino, por largo que sea, es al menos tan largo como la recta entre sus
-extremos, así que su razón ronda 1 (con los huecos del registro, 2 o 3). Una
-etiqueta repartida por el mapa tiene mucha diagonal y poca línea, y la razón
-se dispara. Cuando una unidad que **entra al análisis** pasa de 5, lo dice:
-
-```
-AVISO: estas unidades parecen ETIQUETAS del registro y no tramos:
-  'En proceso' tiene 12.4 km de linea repartidos en una caja de 80 km
-  de diagonal (razon 6.5). Eso parece una ETIQUETA del registro y no un
-  tramo. Si lo es, anadelo a 'datos.tramos_excluidos' en config.yaml.
-```
-
-La decisión es arqueológica y queda escrita en `config.yaml`, no enterrada en
-el código.
-
-Si ya corriste `ruta` antes de esto, vuelve a correr
-`python -m camino ruta --forzar`.
-
-### Tres cosas sobre el orden
-
-**`revisar` es el paso que no se salta.** Traza un camino por unidad con todo
-el peso en el costo físico y los guarda en un GeoPackage, con el observado al
-lado. Ábrelo en QGIS encima del modelo de elevación y míralos con ojos de
-arqueóloga: ¿pasan por donde pasaría un camino?, ¿cruzan las quebradas por
-donde se puede cruzar? Si no son plausibles, ninguno de los siguientes lo
-será, y no hay estadística que lo arregle.
-
-La tabla que imprime marca dos cosas, y las dos invalidan el número que está
-al lado:
-
-- `*` **la unidad está recortada por la caja** — uno de sus extremos no es un
-  destino, es donde cortamos. `python -m camino caja` dice cuánto habría que
-  ensanchar el bbox y lo que costaría en celdas y en memoria.
-- `B` **el camino se pegó al borde de su vecindad** — es el `buffer_corredor`
-  el que está decidiendo, no el terreno. Súbelo y vuelve a correr desde aquí.
-
-La D que imprime `revisar` se mide **en la misma vecindad** que va a usar el
-barrido, así que anticipa lo que el barrido va a reportar con
-`w_fisico = 1`. Si ahí ya sale mal, no hace falta gastar media hora en nulos.
-
-**`nulos` va antes que `barrido`, y no es intercambiable.** Una unidad cuyo
-mejor camino no le gana a terreno aleatorio no tiene pesos que valga la pena
-reportar. Al revés, se acaban comparando pesos de unidades donde el modelo no
-explica nada, y los números parecen válidos sin serlo.
-
-**`validar` no es opcional, es el resultado.** El paso 8 va a reportar que el
-modelo ampliado ajusta mejor que el de referencia. Eso **no significa nada**:
-tiene más parámetros, así que ajusta mejor por construcción sobre los mismos
-datos con que se estimaron sus pesos. El paso 9 estima los pesos dejando fuera
-un pedazo del trazado y los mide sobre ese pedazo, sin recalibrar. Si ahí el
-ampliado no gana, la mejora era capacidad de ajuste y la consola lo dice con
-esas palabras.
-
-### Los pasos 1, 3 y 4 no necesitan el camino
-
-Si el paso 2 se atasca, sáltatelo y sigue: `bajar`, `preparar` y
-`superficies` sólo trabajan con el modelo de elevación. Son los que más
-tardan, y dejan todo listo. Cuando `preparar` corre sin camino, usa la caja
-entera como dominio y te lo dice. A partir de `grafo` sí hace falta.
+Entre el track del amanecer y el del descenso final hay **1888 m y 5.15 h sin
+grabar**; los otros tres empalmes del circuito son de 78, 10 y 12 m. Ese
+último track no es continuación: es un segmento aparte, y pegarlo dibujaría
+una recta de 2 km por terreno del que no hay dato. La regla de trechos lo
+separa sola.
 
 ---
 
-## 5. El camino observado: de dónde sale
+## 6. Los parámetros
 
-El paso 2 acepta tres fuentes:
+El detalle completo, con sus razones, está en los comentarios de
+`config.yaml`. Lo que conviene saber de memoria:
 
-```bash
-python -m camino ruta                                       # GeoCAM
-python -m camino ruta --fuente archivo --archivo X.shp      # un archivo tuyo
-python -m camino ruta --fuente osm                          # apaño provisional
-```
+| parámetro | valor | por qué |
+| --- | --- | --- |
+| `crs` | EPSG:32719 | el estudio está a −71.2°, o sea en la zona **19S**. La 18S proyectaría a 408 km del meridiano central en vez de 241 |
+| `bbox` | −71.425 / −13.824 / −71.185 / −13.5 | los ocho tracks a pie **más el Ausangate**, con 4 km de aire |
+| `visibilidad.puntos` | la cumbre del Ausangate | es el apu documentado (Wikidata Q777794), y toda la peregrinación ocurre en su campo visual |
+| `visibilidad.radio` | 30 000 m | del valle de Sinakara al nevado hay 27 km, y la pregunta es si se ve desde ahí |
+| `largo_min_unidad` | 2 000 m | las unidades son los trechos entre estaciones; el más corto tiene 1.2 km |
+| `g_max` | 0.45 | el rango en que se midió el polinomio de Minetti. El 26.7% del área lo pasa |
 
-### GeoCAM, que es lo que corresponde
+El Ausangate entra a la caja aunque ningún track lo pise: una cuenca visual
+necesita el terreno **del objetivo** y todo el que haya en medio, y el ángulo
+de elevación por sí solo no dice si se ve, porque puede haber una cresta.
 
-Es el registro del Ministerio de Cultura, y es la fuente que se cita en un
-artículo. El programa entra por **WFS**, el estándar OGC que el propio portal
-publica. El endpoint ya viene escrito en `config.yaml`; lo único que falta es
-saber qué capa es el camino, y eso lo averigua:
-
-```bash
-python -m camino buscar
-```
-
-Lista las capas que publica el servidor, las ordena de más a menos probable y
-escribe la primera en `config.yaml`. Después, `python -m camino ruta`.
-
-**A octubre de 2026 ese servidor está caído.** Devuelve un *Proxy Error —
-Error during SSL Handshake with remote server*, y falla igual desde el
-navegador, así que no es nada que puedas arreglar de tu lado. El programa
-prueba cuatro rutas del servidor y reintenta; si aun así no responde, está
-caído y hay que usar una de las otras dos fuentes mientras tanto.
-
-### Un archivo tuyo — el KMZ del registro
-
-La salida práctica mientras GeoCAM no vuelva, y la que está en uso.
-
-[GEO GPS PERÚ](https://www.geogpsperu.com/2020/10/mapa-del-qhapaq-nan-camino-inca.html)
-publica el Qhapaq Ñan nacional en KMZ y shapefile, descarga directa. El KMZ
-no es una traza suelta: trae **las categorías con que el Ministerio clasifica
-cada segmento**, cada una en su propia capa. Ponlo en `datos/` y:
-
-```bash
-python -m camino ruta
-```
-
-**No hace falta ninguna opción**: si hay un archivo de geometría en `datos/`,
-el programa lo encuentra y lo usa; sólo si no hay ninguno intenta GeoCAM. Si
-tienes varios, prefiere el KMZ o KML del registro antes que un GPX de campo.
-Para forzar uno concreto: `--fuente archivo --archivo datos/X.kmz`.
-
-El programa lo abre, saca los atributos (que vienen escondidos en una tabla
-HTML dentro de cada placemark), imprime el inventario de tramos y se queda
-con el que pide `config.yaml`.
-
-**Excluye las capas de «Proyección de Camino»** por Reemplazo, Daños o
-Ausencia. Son tramos donde el camino ya no está y la línea la dibujó alguien
-infiriendo por dónde iba; ajustar el modelo contra ellas es circular. Está
-explicado en `METODO.md`, §8 bis, y se controla con `datos.solo_observadas`.
-
-Lo que hay en la caja del estudio, medido sobre ese KMZ:
-
-| Tramo | rasgos | km | continuo |
-|---|---|---|---|
-| Leymebamba – Chilchos – Mendoza | 2 | 29.29 | 29.29 |
-| La Jalca – Mendoza | 5 | 20.25 | 20.25 |
-| Chachapoyas – Jumbilla | 9 | 16.97 | 14.28 |
-| Pauja – Santa Cruz | 3 | 14.21 | 14.21 |
-| **Chillo – Chachapoyas** | **11** | **23.02** | **12.40** |
-| Chachapoyas – Cochamal | 13 | 28.71 | 8.55 |
-| Pueblo Viejo – La Jalca Grande | 6 | 13.57 | 7.90 |
-
-**Chillo – Chachapoyas** es el tramo del proyecto, y es el que viene puesto
-en `config.yaml`. Para estudiar otro, cambia `datos.tramo`; para usarlos
-todos, déjalo vacío.
-
-También entran por aquí un shapefile, un GeoPackage, un GeoJSON, o el `.gpx`
-del Garmin de Dina cuando vuelva del campo.
-
-### OpenStreetMap, sólo como apaño
-
-Baja las trazas etiquetadas como `historic` o con «inca» o «qhapaq» en el
-nombre. Sirve para que el código corra de punta a punta mientras no hay nada
-mejor. Son trazas cargadas por voluntarios, sin control de precisión ni
-criterio arqueológico: el programa las marca como `osm_provisional` y te lo
-recuerda al terminar. **No valen para publicar.**
+Los cuatro tramos en camión quedan **fuera** de la caja a propósito: meterlos
+la llevaría hasta −71.6 y la triplicaría, y el acercamiento por carretera no
+es lo que se modela. `trayectorias` los mide igual, porque eso no necesita
+DEM; `ruta` no los convierte en camino, porque una carretera moderna está
+trazada buscando ahorro con maquinaria y su razón de costo mide la ingeniería
+vial de hoy.
 
 ---
 
-## 6. Los espacios ceremoniales: el archivo que falta
+## 7. Lo que falta
 
-Es el **único dato de entrada que no se baja solo**, y de él salen las dos
-componentes del modelo ampliado. Sin él, los pasos 8 y 9 avisan y paran.
+**El catálogo de espacios ceremoniales.** `ceremonial.archivo` está vacío a
+propósito, y mientras lo esté el modelo ampliado se para con un mensaje — que
+es lo correcto. Las estaciones están en `datos/favoritos_qoyllurity_2026.gpx`
+como waypoints, y tres tienen identificador de Wikidata (Ausangate Q777794,
+Colque Punku Q13190737, Sinakara Q13190788). Pero un catálogo ceremonial no es
+una lista de puntos marcados en el GPS: hace falta decir de qué fuente sale
+cada uno, qué es (estación de la procesión, santuario, apu, cruz) y si la
+posición es la relevada o la del lugar. Eso se escribe a mano con la
+bibliografía al lado, y **las 68 paradas son la mejor pista de dónde buscar**.
 
-Déjalo en `datos/` con un nombre que empiece por `sitios`:
+**La pendiente de las trayectorias desde el ráster.** Hoy sale del altímetro
+del aparato, con ruido de orden del metro: sobre un paso de 30 m son unos 3
+puntos de pendiente. Con el DEM en disco se puede tomar del ráster, y el
+módulo ya devuelve las coordenadas de cada paso para eso.
 
-```
-datos/sitios.gpkg      datos/sitios.shp      datos/sitios.csv
-datos/sitios.geojson   datos/sitios.kmz
-```
+**El horizonte de las paradas nocturnas**, si se quiere probar lo del
+amanecer. Necesita perfil de horizonte por acimut, que no está escrito.
 
-Un CSV basta, con una columna de nombre y las coordenadas en grados:
-
-```csv
-nombre,lon,lat
-Nombre del sitio,-77.925,-6.418
-```
-
-Acepta puntos y polígonos; de un polígono se toma su punto representativo (un
-recinto, a 30 m de resolución, es un punto). Si están en otro sistema de
-coordenadas, el programa lo reproyecta solo. Los sitios pueden caer **fuera de
-la caja**: uno a 2 km del borde sigue condicionando las celdas de dentro, y se
-usa igual.
-
-### Las dos reglas que hay que aplicar al armarlo
-
-Vienen del proyecto, no son técnicas, y cambian el resultado:
-
-1. **Un sitio que se reconoció *por* el camino no puede explicar el camino.**
-   Si la identificación de un lugar dependió principalmente de estar junto a
-   la vía, usarlo como predictor es circular. Esto el código **no lo puede
-   decidir**: es criterio arqueológico y se filtra al armar el archivo. Es la
-   decisión más importante de todo este paso.
-2. **Un sitio en el extremo del tramo analizado se excluye de su componente.**
-   Esta sí la hace el código, tramo por tramo (`ceremonial.radio_extremos`,
-   500 m por omisión), porque si no el modelo recibe como premio acercarse a un
-   punto al que tiene que llegar de todas formas. Te dice en la consola
-   cuántos quitó.
-
-### Qué pasa si no hay archivo
-
-El paso 8 corre igual con el modelo de referencia, que sólo usa el costo
-físico, y los pasos 1 a 7 no lo necesitan para nada. Lo que no se puede hacer
-sin él es la pregunta del proyecto.
-
-Si quieres correr todo sin sitios mientras llega el catálogo, quita las
-componentes del modelo ampliado en `config.yaml`:
-
-```yaml
-costo:
-  componentes_ampliado: [fisico]
-```
-
-### Los datos de campo no van al repositorio
-
-Los Excel de campo llevan coordenadas exactas de evidencias. **No subas los
-crudos.** `datos/` está en `.gitignore` por eso. Lo que se publica son los
-resultados, no las ubicaciones.
+**n = 1.** Es un caminante y un año. Se puede decir qué hizo él, no qué hizo
+la multitud. Para la hipótesis de que el ritmo lo fija la densidad de gente
+hace falta otra fuente —conteos, fotos, bibliografía— o varios tracks, y eso
+no se puede aumentar hasta el año que viene. Va adelante en el texto, no al
+final.
 
 ---
 
-## 7. Qué mirar en los resultados
+## 8. Qué no se publica
 
-**Al terminar el paso 2**, el programa imprime cuántos metros de *polilínea
-continua* trajo. Es el número que decide el diseño del estudio:
+Los GPX traen waypoints personales: una casa particular, el cementerio de
+Paucartambo, la casa de una persona con nombre y apellido. Esos nueve
+waypoints quedan fuera de la capa `estaciones` del GeoPackage a propósito.
 
-- Con bastante camino continuo, se puede partir en sectores **y** validar en
-  bloques: ajustar los pesos en los sectores pares y medir qué tan bien
-  predicen los impares.
-- Con poco, las dos cosas compiten por los mismos metros y hay que elegir
-  una. Esa decisión se toma **antes** de correr el barrido, no después de ver
-  los resultados.
+Y traen el glaciar y Colque Punku, que es un lugar de acceso restringido
+dentro de una práctica religiosa viva. Eso pide su propio criterio: antes de
+publicar cualquier cosa hay que decidir qué se publica, con qué permiso y de
+quién.
 
-Si el tramo continuo más largo baja de unos 15 km, el programa lo avisa.
-
-Para Chillo – Chachapoyas ya está medido: **23.02 km registrados en 3 piezas,
-la mayor de 12.40 km**. Con eso, `n_sectores: 4` da 3.10 km por sector (unas
-103 celdas de 30 m), que deja margen al camino de mínimo costo dentro de cada
-sector y además permite validación bloqueada —ajustar en los pares, medir en
-los impares—. Con 6 sectores bajarían a 2.07 km y empezarían a ser demasiado
-cortos para que los pesos signifiquen algo.
-
-**Al terminar el paso 8**, `resultados/optimos_por_unidad.json` trae una fila
-por unidad con **los dos modelos lado a lado**:
-
-| campo | qué es |
-|---|---|
-| `D_referencia_m` | distancia media al camino observado, sólo costo físico |
-| `D_ampliado_m` | lo mismo, añadiendo el espacio ceremonial |
-| `mejora_pct` | cuánto baja — **y no es evidencia de nada, ver abajo** |
-| `w_*_ampliado` | los pesos óptimos del ampliado |
-| `*_tau10` | el **rango** de cada peso en el conjunto casi-óptimo |
-| `frechet_*_m` | la segunda métrica, la peor correspondencia |
-| `p_nulo` | contra terreno aleatorio |
-
-El rango es lo que se reporta en el texto: no «w_ceremonial = 0.35» sino
-«w_ceremonial entre 0.20 y 0.45». Y `caminos_optimos.gpkg` trae las
-geometrías —una por modelo y por unidad, más el observado— para abrirlas en
-QGIS y mirarlas encima del terreno.
-
-**`mejora_pct` no es un resultado.** El modelo ampliado tiene más parámetros,
-así que ajusta mejor por construcción sobre los mismos datos con que se
-estimaron sus pesos. Si se reporta esa cifra como evidencia de que el espacio
-ceremonial condiciona el trazado, el argumento es circular.
-
-**Al terminar el paso 9**, `resultados/validacion_bloqueada.json` trae lo que
-sí se puede reportar: para cada bloque retenido, `D_ajuste_m` (en los bloques
-con que se estimaron los pesos) y `D_retenido_m` (en el bloque que no vio). La
-consola resume en una línea **en cuántos bloques retenidos gana el ampliado**.
-Si gana en la mitad o menos, el resultado del estudio es que las componentes
-añadidas no aportan información espacial — y eso es un resultado publicable,
-no un fracaso.
-
-**Al terminar el paso 10**, `resultados/perfil_equifinalidad.png` es la figura
-principal: cómo se separan los conjuntos de pesos entre unidades. Dos unidades
-cuyas curvas se van abajo y se quedan abajo están gobernadas por variables
-distintas. Dos que se solapan no se distinguen con estos datos, y eso también
-es un resultado.
-
----
-
-## 8. Los parámetros
-
-Todos viven en `config.yaml`, cada uno con su comentario. Si un umbral
-aparece escrito dentro del código, es un error.
-
-Tres que probablemente toques:
-
-**`unidad`** — qué se compara con qué. Es la decisión de diseño del estudio.
-
-```yaml
-barrido:
-  unidad: tramo          # o "sector"
-  largo_min_unidad: 8000
-```
-
-Con `tramo`, cada tramo con nombre del registro es una unidad: el Ministerio
-los registró y los nombró de forma independiente, así que comparar pesos
-entre ellos compara cosas que existen. Con `sector`, un solo tramo se corta en
-`n_sectores` pedazos iguales — sirve para preguntar si algo cambia *a lo
-largo* de un tramo, pero el resultado siempre carga con la sospecha de
-depender de dónde cayó el corte, y para eso está `python -m camino
-sensibilidad`.
-
-**`componentes_referencia` / `componentes_ampliado`** — los dos modelos que se
-comparan.
-
-```yaml
-costo:
-  componentes_referencia: [fisico]
-  componentes_ampliado: [fisico, ceremonial]
-```
-
-`fisico` es el costo metabólico de Minetti, la única componente anisotrópica
-(ir y volver no cuestan lo mismo). `ceremonial` es la proximidad a los
-espacios ceremoniales. Para añadir la intervisibilidad con esos mismos
-sitios:
-
-```yaml
-  componentes_ampliado: [fisico, ceremonial, visibilidad]
-```
-
-Con dos componentes son 21 juegos de pesos; con tres, 231, y el barrido pasa
-de segundos a media hora. Antes de encender `visibilidad`, lee la sección
-`visibilidad` de `config.yaml`: **en este corredor no hay apu documentado**,
-así que la componente mide otra cosa que en el proyecto del Coropuna.
-
-La rugosidad y el drenaje **ya no son componentes con peso**. La rugosidad es
-restricción (`restricciones.rugosidad_percentil`) y el drenaje es
-diagnóstico; así los dos modelos comparten el mismo espacio de tránsito y la
-diferencia entre ellos es atribuible a lo que se añadió.
-
-**`buffer_corredor`** — media anchura, en metros, de la franja alrededor del
-camino por donde el modelo puede buscar.
-
-```yaml
-dominio:
-  buffer_corredor: 4000
-```
-
-Existe por cómputo: el área completa son tres millones y medio de celdas y no
-se pueden barrer. Pero si la franja es estrecha, es ella la que decide el
-resultado. Por eso `revisar` comprueba si el camino modelado se pegó al
-borde; si avisa, sube este número y vuelve a correr desde `preparar`.
-
-**`umbral_quebrada`** — cuántas celdas de área drenada hacen que una celda
-cuente como quebrada.
-
-```yaml
-dominio:
-  umbral_quebrada: 500
-```
-
-500 celdas son 0.45 km² a 30 m. Es el único parámetro de todo el modelo que
-el trabajo de campo fija directamente: se calibra contra las quebradas que
-realmente haya que cruzar.
-
-### Datos sensibles
-
-Las coordenadas de evidencias arqueológicas sensibles o no publicadas no
-entran al repositorio público. El `.gitignore` ya excluye `datos/` y
-`derivados/`, y todo lo que hay ahí se regenera corriendo los pasos, así que
-no se pierde nada por no versionarlo. Lo que se publique pasa antes por las
-restricciones institucionales que correspondan.
-
----
-
-## 9. Si algo falla
-
-| Lo que dice la consola | Qué pasa |
-|---|---|
-| `ModuleNotFoundError` | falta `conda activate camino` |
-| `Falta la llave de OpenTopography` | el `set OPENTOPOGRAPHY_API_KEY=...` del §3, en esta misma ventana |
-| `no se pudo bajar el agua de OpenStreetMap` | Overpass está saturado. **No bloquea nada**: la máscara queda sin excluir lagunas. Reintenta luego con `python -m camino bajar --forzar` |
-| `Falta la dirección de GeoCAM` | corre `python -m camino buscar`, o usa otra fuente (§5) |
-| `Proxy Error … SSL Handshake` | el servidor del Ministerio está caído. No es tuyo. Usa otra fuente (§5) |
-| `Ningún endpoint WFS respondió` | lo mismo; el programa ya probó cuatro rutas, dos veces |
-| `ninguna parece ser el camino` | mira la lista que imprime `buscar` y pon a mano la capa en `geocam_capa` |
-| `no tiene nada dentro de la caja del tramo` | bajó una capa que no es el camino, o el tramo no está digitalizado ahí |
-| `No hay camino entre los extremos` | el dominio está partido. El mensaje dice en qué componente cae cada extremo y qué suele causarlo; mira `derivados/mascara.tif` en QGIS |
-| `el camino modelado toca el borde del corredor` | sube `buffer_corredor` y vuelve a correr desde `preparar` |
-| `la pieza continua mide X m` | poco camino continuo para tantos sectores: baja `n_sectores` |
-
----
-
-## Por qué no se usa un GIS para esto
-
-- `r.cost` de GRASS es isotrópico: no distingue subir de bajar.
-- `r.walk` sí distingue, pero tiene su función de marcha cableada por dentro
-  y no admite pesos elegidos por el usuario.
-- `MCP_Geometric` de scikit-image es isotrópico.
-- QGIS no trae nada equivalente.
-
-Ninguno permite recorrer sistemáticamente juegos de pesos sobre un costo que
-distinga el sentido de la marcha, que es exactamente lo que pide la pregunta.
-De ahí el programa: numpy y scipy, sin dependencias raras.
+Para el `.gitignore`: fuera `datos/`, `derivados/` y `resultados/*.gpkg`.
+`paradas.gpkg` y `qoyllur_qgis.gpkg` en particular, que son precisamente el
+cruce entre horarios y lugares.
