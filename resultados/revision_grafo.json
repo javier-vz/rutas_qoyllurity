@@ -1,0 +1,38 @@
+[
+  {
+    "unidad": "santuario wataskama - 2026-06-03_06-20_Wed",
+    "origen": "trayectoria",
+    "recortada_por_la_caja": false,
+    "nodos_vecindad": 215236,
+    "largo_observado_km": 20.52,
+    "largo_modelado_km": 19.52,
+    "largo_recto_km": 16.16,
+    "sinuosidad_observada": 1.27,
+    "sinuosidad_modelada": 1.21,
+    "distancia_media_m": 667.7,
+    "frechet_m": 1791.9,
+    "razon_de_costo": 1.073,
+    "autoproximidad_m": 502.9,
+    "giro_maximo_grados": 175.9,
+    "franja_celdas": 2,
+    "toca_borde_de_la_vecindad": false
+  },
+  {
+    "unidad": "Mahu santuario",
+    "origen": "trayectoria",
+    "recortada_por_la_caja": false,
+    "nodos_vecindad": 123714,
+    "largo_observado_km": 8.7,
+    "largo_modelado_km": 7.86,
+    "largo_recto_km": 6.46,
+    "sinuosidad_observada": 1.35,
+    "sinuosidad_modelada": 1.22,
+    "distancia_media_m": 80.6,
+    "frechet_m": 304.5,
+    "razon_de_costo": 1.028,
+    "autoproximidad_m": 331.3,
+    "giro_maximo_grados": 115.9,
+    "franja_celdas": 2,
+    "toca_borde_de_la_vecindad": false
+  }
+]
