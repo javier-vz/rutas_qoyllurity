@@ -1,11 +1,13 @@
 """Que caja haria falta para que los tramos entren completos.
 
-Esto existe por un problema concreto del tramo Leimebamba - Chachapoyas: de
-las seis unidades que pasan el filtro de largo, CUATRO llegan al borde de la
-caja. Un tramo recortado tiene un extremo inventado -- no es un destino, es
-donde pusimos el limite-- asi que sus pesos valen menos que los de una
-unidad completa, y con dos unidades limpias el perfil de equifinalidad se
-queda en UN par.
+Una unidad recortada por el borde de la caja tiene un extremo inventado --no
+es un destino, es donde pusimos el limite-- asi que sus pesos valen menos
+que los de una unidad completa, y con pocas unidades limpias el perfil de
+equifinalidad se queda sin pares que contrastar.
+
+El caso que motivo esto: en una corrida sobre Amazonas, de las seis unidades
+que pasaban el filtro de largo, CUATRO llegaban al borde, y quedaban dos
+unidades limpias, o sea UN par.
 
 La decision (ensanchar o descartar) no la puede tomar el codigo, pero si
 puede poner el numero delante: cuanto habria que ensanchar, y cuanto costaria

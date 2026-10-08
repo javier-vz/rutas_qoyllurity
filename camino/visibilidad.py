@@ -1,37 +1,40 @@
-"""Visibilidad: la componente que NO se transfiere tal cual desde el Coropuna.
+"""Visibilidad: que fraccion de los puntos pertinentes se ve desde cada celda.
 
-En el proyecto del Coropuna la visibilidad tiene un referente unico y
-documentado: el nevado. Es un apu con nombre, con culto registrado y con un
-santuario de altura en la cumbre, asi que "ver el apu" es una variable bien
-definida y la cuenca visual se calcula desde un punto.
+La componente mide intervisibilidad, y acepta los puntos por dos vias que se
+suman:
 
-En el corredor del Utcubamba no hay nada equivalente. La documentacion de
-los sitios Chachapoya del valle no describe ningun cerro tutelar con
-nombre: describe una relacion con el paisaje en conjunto, con sitios
-colocados sobre afloramientos y farallones prominentes -- los mas
-inaccesibles, pero muy visibles desde lejos -- y estructuras funerarias en
-cornisas visibles de un lado a otro del valle. La direccion de la mirada
-esta INVERTIDA respecto del Coropuna: lo que se hace visible es el SITIO, no
-la montana.
+    'ceremonial.archivo'    los espacios ceremoniales del catalogo
+    'visibilidad.puntos'    cumbres o referentes con nombre, en la config
 
-Asi que la forma que si se transfiere es la INTERVISIBILIDAD CON LOS PROPIOS
-ESPACIOS CEREMONIALES: la fraccion de sitios pertinentes que se ven desde
-cada celda. Usa el mismo archivo de entrada que la proximidad, y las dos
-componentes preguntan cosas distintas sobre el mismo dato: si lo que
-condiciona el trazado es pasar CERCA de un sitio o pasar DONDE SE VE. Por eso
-pueden entrar las dos al modelo ampliado sin ser redundantes -- y por eso
-conviene mirar si sus pesos se reparten o si una se come a la otra.
+Las dos entran a la misma cuenta. Cual de las dos tiene sentido en un area
+dada NO lo decide este modulo: es una decision del estudio y vive en su
+`config.yaml`, al lado de las coordenadas, porque depende de lo que la
+documentacion de esa zona describa.
 
-Si algun dia aparece un cerro tutelar documentado para este corredor, va en
-'visibilidad.puntos' de la config y se suma a los sitios sin tocar el codigo.
+LA DIRECCION DE LA MIRADA NO ES LA MISMA EN TODAS PARTES, y conviene tenerlo
+presente al rellenar la config. Donde hay un apu con nombre, con culto
+registrado y con santuario de altura, "ver el cerro" es una variable bien
+definida y se calcula desde un punto: ese caso va en 'visibilidad.puntos'.
+Donde la documentacion no describe ningun cerro tutelar sino una relacion
+con el paisaje en conjunto -- sitios sobre afloramientos y farallones
+prominentes, muy visibles desde lejos, o estructuras funerarias en cornisas
+visibles de un lado a otro del valle-- lo que se hace visible es el SITIO y
+no la montana, y entonces lo que sirve es la intervisibilidad con los
+propios espacios ceremoniales.
+
+Esta componente usa el mismo archivo de entrada que la proximidad, y las dos
+preguntan cosas distintas sobre el mismo dato: si lo que condiciona el
+trazado es pasar CERCA de un sitio o pasar DONDE SE VE. Por eso pueden
+entrar las dos al modelo ampliado sin ser redundantes -- y por eso conviene
+mirar si sus pesos se reparten o si una se come a la otra.
 
 LIMITE QUE HAY QUE DECIR EN EL TEXTO, NO ESCONDER: una cuenca visual sobre
 un DEM de 30 m es visibilidad POTENCIAL SOBRE TERRENO DESNUDO Y CON BUEN
-TIEMPO. No hay vegetacion en el modelo, y esto es ceja de selva: bosque de
-neblina con cobertura cerrada buena parte del ano. Es una idealizacion,
-igual que el resto del modelo, y el propio proyecto la enmarca como "una
-hipotesis de modelamiento y no como evidencia directa de intencionalidad
-historica".
+TIEMPO. El modelo no tiene vegetacion ni nubes, y en una ceja de selva con
+bosque de neblina cerrado buena parte del ano eso es mucho suponer, igual
+que en alta montana con el nevado tapado media manana. Es una idealizacion,
+como el resto del modelo, y se enmarca como "una hipotesis de modelamiento y
+no como evidencia directa de intencionalidad historica".
 """
 
 from __future__ import annotations

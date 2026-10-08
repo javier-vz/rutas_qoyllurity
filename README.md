@@ -58,8 +58,8 @@ el propio receptor.
 ## 2. Cómo está organizada la carpeta
 
 ```
-qoyllur/
-├── camino/                     el paquete
+<esta carpeta>/
+├── camino/                     el paquete (el codigo)
 ├── config.yaml                 los parámetros del estudio
 ├── datos/
 │   ├── trayectorias/           los doce .gpx grabados, con sello de tiempo
@@ -73,6 +73,13 @@ qoyllur/
 ├── METODO.md                   las ecuaciones
 └── README.md                   esto
 ```
+
+**No trae el banco de pruebas.** Varios tests llevan geometrias de prueba en
+el corredor del Utcubamba y se apoyan en el `config.yaml` del proyecto, asi
+que con esta caja caen fuera y fallan. Es una costura del banco de pruebas
+--deberian usar una config sintetica propia-- y vale arreglarla, pero no
+tiene sentido arrastrar aqui diez fallos que no dicen nada del codigo. El
+`camino/` de esta carpeta es byte por byte el mismo que pasa los 423.
 
 `datos/trayectorias/` es la entrada del paso nuevo y, a través de `ruta`, la
 fuente del camino observado: **aquí el recorrido grabado hace de camino**, no
@@ -129,7 +136,10 @@ permanencia, clasifica el modo de viaje y escribe en `resultados/`:
 | `trayectorias_sensibilidad.csv` | la fracción de tiempo parado según los dos parámetros que la definen |
 | `paradas.gpkg` | las paradas como puntos, capa `paradas`, para QGIS |
 
-### El resto
+### Recalcular todo, de cero
+
+Esta carpeta viene con `derivados/` y `resultados/` **vacios** a proposito.
+Todo se vuelve a calcular con estos pasos, en este orden:
 
 ```
 python -m camino bajar          # COP30 y AW3D30 de la caja
@@ -224,9 +234,24 @@ de dónde están las estaciones**. La más larga —123 minutos a 4611 m, durant
 la marcha nocturna— está a 2.7 km del waypoint más próximo. Ahí hay una
 estación que no está en la lista.
 
-Ese cruce es lo primero que hay que mirar en QGIS, con
-`resultados/qoyllur_qgis.gpkg`, que trae las cuatro capas juntas:
-`recorrido`, `optimo`, `paradas` y `estaciones`.
+Ese cruce es lo primero que hay que mirar. Hay dos archivos para eso:
+
+- **`resultados/qoyllur_qgis.gpkg`** — las cuatro capas juntas para QGIS:
+  `recorrido`, `optimo`, `paradas` y `estaciones`. Se arrastra y salen todas.
+- **`resultados/qoyllur_rit_i_2026.kmz`** — lo mismo para Google Earth. Abre
+  en la versión web y en la de escritorio. Los ocho tramos van numerados y
+  con su hora de salida y llegada, así que la secuencia se lee sin barra de
+  tiempo.
+- **`resultados/qoyllur_rit_i_2026_animado.kmz`** — sólo Google Earth Pro de
+  escritorio. Además lleva el recorrido como `gx:Track` y las paradas con
+  `TimeSpan`: con la barra de tiempo encendida la peregrinación avanza con
+  sus horas reales, incluida la marcha nocturna. **Google Earth Web no lee
+  ninguna de esas dos cosas** y da error si se le abre este archivo.
+
+Los iconos van dentro del KMZ, no en una URL: así no dependen de que un
+servidor ajeno siga vivo ni de que haya internet.
+
+Los dos salen de `resultados/` y llevan sólo los waypoints del estudio.
 
 ### La calidad del DEM
 

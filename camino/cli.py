@@ -64,8 +64,8 @@ _FORZABLES = {"bajar"}
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(
         prog="python -m camino",
-        description="Optimizacion inversa de pesos de terreno, "
-                    "tramo Leimebamba - Chachapoyas.",
+        description="Optimizacion inversa de pesos de terreno sobre un "
+                    "recorrido observado. La zona la define config.yaml.",
         epilog="Pasos en orden: " + " -> ".join(ORDEN)
                + ".  'todo' los corre todos.\n"
                + "Ayuda aparte: 'buscar' encuentra la direccion de GeoCAM "
